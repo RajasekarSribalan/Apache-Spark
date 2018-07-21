@@ -106,3 +106,78 @@ hadoop fs -du -s -h /relatil_db
 
 How to get details about defaults - > Go to Sparl/conf/Spark-env.sh. This file will have default values
 
+
+
+****RDD
+
+In-memory
+distributed collection
+Resilient - Data is being processed by a task and if a task is failed,RDD will be recomputed by another task
+
+RDD can be created in two ways.Once is through sc.textFile -> reading the text file from HDFS and another way is through paralleize a collection
+
+Our data set hadoop fs -tail /public/retail_db/orders/part-00000
+
+**************Reading data using SparkContext
+
+******** Create RDD from HDFS
+
+1)Launch Spark-shell
+
+spark-shell --master yarn \
+ --num-executors 1 \
+ --executor-memory 512M
+
+
+2)sc.textFile("") ->Only directory name is enough as all the files under the directory will be processed.
+
+//RDD from files in HDFS
+3) val fileRDD = sc.textFile("/public/retail_db/orders/")
+4) fileRDD.first
+	res1: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+5) fileRDD.take(10)
+	res2: Array[String] = Array(1,2013-07-25 00:00:00.0,11599,CLOSED, 2,2013-07-25 00:00:00.0,256,PENDING_PAYMENT, 3,2013-07-25 00:00:00.0,12111,COMPLETE, 4,2013-07-25 00:00:00.0,8827,CLOSED, 5,2013-07-25 00:00:00.0,11318,COMPLETE, 6,2013-07-25 00:00:00.0,7130,COMPLETE, 7,2013-07-25 00:00:00.0,4530,COMPLETE, 8,2013-07-25 00:00:00.0,2911,PROCESSING, 9,2013-07-25 00:00:00.0,5657,PENDING_PAYMENT, 10,2013-07-25 00:00:00.0,5648,PENDING_PAYMENT)
+
+******** Create RDD from local filesystem
+
+We cannot use sc.textFile.We need to use scala FIle api to read the file from the local filesystem and then convert it as RDD using paraellize.
+
+1)Launch Spark-shell
+
+spark-shell --master yarn \
+ --num-executors 1 \
+ --executor-memory 512M
+
+// RDD from files in local file system
+2)val productsRaw = scala.io.Source.fromFile("/home/raj/Project/itversity_data/data/retail_db/orders/part-00000").getLines.toList
+3)val products = sc.parallelize(productsRaw)
+4)products.first
+ res0: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+5)products.take(3)
+ res1: Array[String] = Array(1,2013-07-25 00:00:00.0,11599,CLOSED, 2,2013-07-25 00:00:00.0,256,PENDING_PAYMENT, 3,2013-07-25 00:00:00.0,12111,COMPLETE)
+6)products.count
+ res2: Long = 68883
+
+
+*******Previewing data using actions
+Following are the operations on top of RDD that can be performed to preview the data
+
+take
+first
+count
+and more
+
+To get the genertaed DAG -> orderRDD.toDebugString
+
+val orders = sc.textFile("/public/retail_db/orders")
+
+// Previewing data
+orders.first
+orders.take(10).foreach(println)
+orders.count
+
+// Use collect with care. 
+// As it creates single threaded list from distributed RDD, 
+// using collect on larger datasets can cause out of memory issues.
+orders.collect.foreach(println) 
+
