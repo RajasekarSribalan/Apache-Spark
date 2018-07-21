@@ -1,0 +1,108 @@
+Spark is a Distributed Computing framework
+It is not a programming language
+It's core level api are Transformation and aggregation
+High level modules are Data Frames/Sql,Streams and more.
+Well Integerated with Python and Scala
+Spark Uses HDFS Api to deal with file system
+It doesnot have undelying file system'
+Core Spark and Spark SQL is required for CCA
+
+
+**** Spark enable distributed data processing through functional transformation on distributed collections of data. ***
+Keeping data in memory
+*** Distributed shared memory
+
+spark-shell --master yarn --conf spark.ui.port=12654
+
+RDD:
+
+RDD is a read only ,partitioned collection of records.
+Load several datasets into memory and run ad-hoc query on them
+Fault tolerant
+Persist immediate results in memory
+
+Limitations of RDD:
+
+It is designed for batch application
+
+How it works?
+
+1)When we create a spark application is called as a driver program.The spark application which has the main method or triggering point is calld the driver program
+
+2)Spark context should be created to run the spark app in the  spark cluster.It will be treated as a gateweay between your driver and the cluster.It will communicate with the CLuster Manager.(E..g Yarn,Mesos,Spark master)
+
+3)Once the application is available for the cluster manager which has the information of all resources(CPU,RAM,Disc of worker nodes),
+
+4)There is no concept of namenode in the spark
+
+5)Executors will create tasks and the task will work on the data
+
+6)If we want to persist the data ,then cache can be used.
+
+Worker node:
+	Node thar run the application program in cluster.
+Executor :
+ Process Launched on worker node,that runs the Tasks
+
+Task:
+ basic unit of the work
+
+****** Running Spark application in local mode *****
+sc.parallelize(1 to 100)
+Only one Task is executed and only one stage and one executor
+
+****** Running Spark application in Yarn mode *****
+
+sc.parallelize(1 to 100)
+Two tasks are created
+2 Exectuors for 2 tasks
+2 executor for driver
+
+Note: Why 2 tasks? It is because number of tasks are dependent upon on number of partitions of a RDD
+a.partitions.length
+
+Int = 2
+
+Default by yarn,two partitions are allocated in this machine
+
+When it is run in local mode,by default  one partition will be used hence only one task
+
+It can be overriden by --master local[2]
+So 2 means number of cores
+
+So,number of paritions means num of cores required to process
+
+If we are not sure of number of paritions,we can give --master local[*]
+
+It ran 8 task because of 8 cores but only one executor
+
+In yarn mode,
+
+--master yarn
+
+I parallelized 8 partitions.
+
+sc.parallelize(1 to 100,8)
+
+2 executors were created
+8 tasks were executed.4 tasks on each executer
+
+If i set, sc.parallelize(1 to 100,9)
+
+2 executors were created
+10 tasks were executed.5 tasks on each executer
+
+
+
+Memory management (Important)
+ By default,2 Executors will be created for Yarn
+
+Executor memory -executor-memory MEM       Memory per executor (e.g. 1000M, 2G) (Default: 1G).
+num executors  --num-executors NUM         Number of executors to launch (Default: 2)
+
+We need to increaed or decrease based on the size of data.
+
+hadoop fs -du -s -h /relatil_db
+
+How to get details about defaults - > Go to Sparl/conf/Spark-env.sh. This file will have default values
+
