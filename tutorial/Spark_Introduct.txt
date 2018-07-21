@@ -148,6 +148,8 @@ spark-shell --master yarn \
  --num-executors 1 \
  --executor-memory 512M
 
+
+
 // RDD from files in local file system
 2)val productsRaw = scala.io.Source.fromFile("/home/raj/Project/itversity_data/data/retail_db/orders/part-00000").getLines.toList
 3)val products = sc.parallelize(productsRaw)
@@ -180,4 +182,33 @@ orders.count
 // As it creates single threaded list from distributed RDD, 
 // using collect on larger datasets can cause out of memory issues.
 orders.collect.foreach(println) 
+
+
+
+******Reading data using SQLContext
+Spark Context has api only to read textfiles from local or HDFS.
+To read Parquet,json or csv,we need to use SqlContext.
+
+SQLContext have 2 APIs to read data of different file formats
+
+load – typically takes 2 arguments, path and format
+read – have interface for each of the file format (e.g.: read.json)
+Following are the file formats supported
+
+text
+orc
+parquet
+json (example shown)
+csv (3rd party plugin)
+avro (3rd party plugin, but Cloudera clusters get by default)
+
+-------------------
+ val json = spark.read.json("/public/retail_db_json/orders/")
+json.show;
+
+
+val jsonRDD = spark.read.format("json").load("/public/retail_db_json/orders/")
+jsonRDD.show;
+----------------------
+
 
