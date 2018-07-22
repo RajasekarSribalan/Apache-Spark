@@ -1,0 +1,41 @@
+********** Filtering the data *********
+
+ 1)filter is the API to filter the data from input RDD
+ 2)It takes anonymous function which returns true or false
+ 3)All those elements on which anonymous function returns true, such elements will be copied to output RDD
+ 4)Output RDD is typically subset of input RDD
+ 5)No modifications can be made on the records while filtering the data.
+
+Filter can be done horizontally(Rows) or vertically(Columns)
+
+Map will filter vertically,It will eliminate columns
+Filter will filer horizontally,it will eliminate row
+
+//Filtering data
+
+Filter should return an expression which should say whether it is true or false.
+
+---------------------------------------------------------
+
+val orders = sc.textFile("/public/retail_db/orders")
+
+orders.filter(order => order.split(",")(3) == "COMPLETE")
+
+orders.count
+
+orders.filter(order => order.split(",")(3) == "COMPLETE").count
+
+// Get all the orders from 2013-09 which are in closed or complete
+
+orders.map(order => order.split(",")(3)).distinct.collect.foreach(println)
+
+val ordersFiltered = orders.filter(order => {
+  val o = order.split(",")
+  (o(3) == "COMPLETE" || o(3) == "CLOSED") && (o(1).contains("2013-09"))
+})
+
+ordersFiltered.take(10).foreach(println)
+ordersFiltered.count
+
+----------------------------------------------------------
+

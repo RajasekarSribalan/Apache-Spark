@@ -184,7 +184,7 @@ orders.count
 orders.collect.foreach(println) 
 
 
-
+Spark 2.* doesnt support SqlContext
 ******Reading data using SQLContext
 Spark Context has api only to read textfiles from local or HDFS.
 To read Parquet,json or csv,we need to use SqlContext.
@@ -210,5 +210,15 @@ json.show;
 val jsonRDD = spark.read.format("json").load("/public/retail_db_json/orders/")
 jsonRDD.show;
 ----------------------
+
+Why does spark create derby.log and metastore_db where spark job is executed in the current directory
+
+------------
+
+hadoop fs -ls /public/retail_db_json/orders
+
+sqlContext.read.json("/public/retail_db_json/orders").show
+sqlContext.load("/public/retail_db_json/orders", "json").show
+-------
 
 

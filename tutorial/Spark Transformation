@@ -1,0 +1,520 @@
+***** Spark Transformation ********
+
+Spark supports many standard transformations out of the box
+
+	Row level transformation – map, flatMap
+	Filtering Data – filter
+	Performing aggregations – reduceByKey, aggregateByKey
+	Joins – join, leftOuterJoin, rightOuterJoin
+	Sorting and Ranking – sortByKey, groupByKey
+	Set Operations – union, intersection, distinct
+	and more
+
+
+****Row level transformation 
+
+
+Let us look into the details for performing row level transformations
+
+	Understand string manipulation using Scala
+	map
+	FlatMap
+
+
+
+*** String Manipulation
+
+Understanding string manipulation APIs helps us processing data as part of lambda or anonymous functions used in Spark APIs
+
+Extracting data – split and get required fields
+Converting data types – type cast functions
+Discarding unnecessary columns
+Derive new expressions with data from different fields
+--------------------------
+
+scala> val orders = sc.textFile("/public/retail_db/orders")
+orders: org.apache.spark.rdd.RDD[String] = /public/retail_db/orders MapPartitionsRDD[1] at textFile at <console>:24
+
+scala> orders.first
+res0: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+
+scala> val str = orders.first
+str: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+
+scala> str
+res1: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+
+scala> str.
+*                 companion             foldLeft             lastIndexOf           reduce                sorted         toIterable      
++                 compare               foldRight            lastIndexOfSlice      reduceLeft            span           toIterator      
+++                compareTo             forall               lastIndexWhere        reduceLeftOption      split          toList          
+++:               compareToIgnoreCase   foreach              lastOption            reduceOption          splitAt        toLong          
++:                compose               format               length                reduceRight           startsWith     toLowerCase     
+/:                concat                formatLocal          lengthCompare         reduceRightOption     stringPrefix   toMap           
+:+                contains              genericBuilder       lift                  regionMatches         stripLineEnd   toSeq           
+:\                containsSlice         getBytes             lines                 replace               stripMargin    toSet           
+<                 contentEquals         getChars             linesIterator         replaceAll            stripPrefix    toShort         
+<=                copyToArray           groupBy              linesWithSeparators   replaceAllLiterally   stripSuffix    toStream        
+>                 copyToBuffer          grouped              map                   replaceFirst          subSequence    toString        
+>=                corresponds           hasDefiniteSize      matches               repr                  substring      toTraversable   
+addString         count                 hashCode             max                   reverse               sum            toUpperCase     
+aggregate         diff                  head                 maxBy                 reverseIterator       tail           toVector        
+andThen           distinct              headOption           min                   reverseMap            tails          transpose       
+apply             drop                  indexOf              minBy                 runWith               take           trim            
+applyOrElse       dropRight             indexOfSlice         mkString              sameElements          takeRight      union           
+canEqual          dropWhile             indexWhere           nonEmpty              scan                  takeWhile      unzip           
+capitalize        endsWith              indices              offsetByCodePoints    scanLeft              to             unzip3          
+charAt            equals                init                 orElse                scanRight             toArray        updated         
+chars             equalsIgnoreCase      inits                padTo                 segmentLength         toBoolean      view            
+codePointAt       exists                intern               par                   self                  toBuffer       withFilter      
+codePointBefore   filter                intersect            partition             seq                   toByte         zip             
+codePointCount    filterNot             isDefinedAt          patch                 size                  toCharArray    zipAll          
+codePoints        find                  isEmpty              permutations          slice                 toDouble       zipWithIndex    
+collect           flatMap               isTraversableAgain   prefixLength          sliding               toFloat                        
+collectFirst      flatten               iterator             product               sortBy                toIndexedSeq                   
+combinations      fold                  last                 r                     sortWith              toInt                          
+
+
+scala> str.split(",")
+res2: Array[String] = Array(1, 2013-07-25 00:00:00.0, 11599, CLOSED)
+
+scala> str
+res3: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+
+scala> val a = str.split(",")
+a: Array[String] = Array(1, 2013-07-25 00:00:00.0, 11599, CLOSED)
+
+scala> a
+res4: Array[String] = Array(1, 2013-07-25 00:00:00.0, 11599, CLOSED)
+
+scala> a(0)
+res5: String = 1
+
+scala> a(1)
+res6: String = 2013-07-25 00:00:00.0
+
+scala> a(2)
+res7: String = 11599
+
+scala> a(3)
+res8: String = CLOSED
+
+scala> a(4)
+java.lang.ArrayIndexOutOfBoundsException: 4
+  ... 49 elided
+
+scala> val orderId = a(0).
+
+scala> val orderId = a(0).toInt
+orderId: Int = 1
+
+scala> a(1)
+res10: String = 2013-07-25 00:00:00.0
+
+scala> a(1).contains("2017")
+res11: Boolean = false
+
+scala> a(1).contains("2013")
+res12: Boolean = true
+
+scala> val orderDate = a(1)
+orderDate: String = 2013-07-25 00:00:00.0
+
+scala> orderDate.substring(0,10)
+res13: String = 2013-07-25
+
+scala> orderDate.substring(5,7)
+res14: String = 07
+
+scala> orderDate.substring(8,10)
+res15: String = 25
+
+scala> orderDate.substring(11)
+res16: String = 00:00:00.0
+
+scala> orderDate.replace
+replace   replaceAll   replaceAllLiterally   replaceFirst
+
+scala> orderDate.replace('-','/')
+res17: String = 2013/07/25 00:00:00.0
+
+scala> orderDate.replace('07','July')
+<console>:1: error: unclosed character literal
+orderDate.replace('07','July')
+                  ^
+<console>:1: error: unclosed character literal
+orderDate.replace('07','July')
+                            ^
+
+scala> orderDate.replace("07","July")
+res18: String = 2013-July-25 00:00:00.0
+
+scala> orderDate.index
+indexOf   indexOfSlice   indexWhere
+
+scala> orderDate.indexof
+   indexOf   indexOfSlice   lastIndexOf   lastIndexOfSlice
+
+scala> orderDate.indexof("2")
+<console>:26: error: value indexof is not a member of String
+       orderDate.indexof("2")
+                 ^
+
+scala> orderDate.indexOf("2")
+res20: Int = 0
+
+scala> orderDate.indexOf("20")
+res21: Int = 0
+
+scala> orderDate.indexOf("0")
+res22: Int = 1
+
+scala> orderDate.indexOf("1")
+res23: Int = 2
+
+scala> orderDate.indexOf("00")
+res24: Int = 11
+
+scala> orderDate.indexOf("2",2)
+res25: Int = 8
+
+scala> orderDate.indexOf("0",2)
+res26: Int = 5
+
+scala> orderDate.indexOf("0",3)
+res27: Int = 5
+
+scala> orderDate.indexOf("0",4)
+res28: Int = 5
+
+scala> orderDate.lenth
+<console>:26: error: value lenth is not a member of String
+       orderDate.lenth
+                 ^
+
+scala> orderDate.length
+res30: Int = 21
+
+scala> orderDate.toLo
+toLong   toLowerCase
+
+scala> orderDate.toLowerCase
+res31: String = 2013-07-25 00:00:00.0
+
+-------------------------
+
+****** Map
+
+
+map is used for
+
+Perform row level transformations where one record transforms into another record
+	Number of records in input RDD and output RDD will be equal
+	map is typically followed by other APIs used for
+		joining the data
+		performing aggregations
+		sorting etc
+
+
+--------------------------------------------
+
+
+scala> val orders = sc.textFile("/public/retail_db/orders")
+orders: org.apache.spark.rdd.RDD[String] = /public/retail_db/orders MapPartitionsRDD[3] at textFile at <console>:24
+
+scala> orders.first
+res33: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+
+scala> // 2013-07-25 00:00:00.0 -> 20130725 as Int
+
+scala> val str = orders.first
+str: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+
+scala> str
+res34: String = 1,2013-07-25 00:00:00.0,11599,CLOSED
+
+
+scala> str.split(",")(1).substring(0,10).replace("-","").toInt
+res35: Int = 20130725
+
+scala> orders.map
+map   mapPartitions   mapPartitionsWithIndex
+
+scala> orders.map
+   def map[U](f: String => U)(implicit evidence$3: scala.reflect.ClassTag[U]): org.apache.spark.rdd.RDD[U]
+
+scala> orders.map
+   def map[U](f: String => U)(implicit evidence$3: scala.reflect.ClassTag[U]): org.apache.spark.rdd.RDD[U]
+
+scala> orders.map((str:String) => {
+     | str.split(",")(1).substring(0,10).replace("-","").toInt
+     | })
+res36: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[6] at map at <console>:28
+
+scala> val orderDates = orders.map((str:String) => {
+     | str.split(",")(1).substring(0,10).replace("-","").toInt
+     | })
+orderDates: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[7] at map at <console>:27
+
+scala> orderDates.take(10).foreach(println)
+18/07/22 17:50:25 INFO SparkContext: Starting job: take at <console>:26
+18/07/22 17:50:25 INFO DAGScheduler: Got job 1 (take at <console>:26) with 1 output partitions
+18/07/22 17:50:25 INFO DAGScheduler: Final stage: ResultStage 1 (take at <console>:26)
+18/07/22 17:50:25 INFO DAGScheduler: Parents of final stage: List()
+18/07/22 17:50:25 INFO DAGScheduler: Missing parents: List()
+18/07/22 17:50:25 INFO DAGScheduler: Submitting ResultStage 1 (MapPartitionsRDD[2] at map at <console>:27), which has no missing parents
+18/07/22 17:50:25 INFO MemoryStore: Block broadcast_2 stored as values in memory (estimated size 3.5 KB, free 366.0 MB)
+18/07/22 17:50:25 INFO MemoryStore: Block broadcast_2_piece0 stored as bytes in memory (estimated size 2.1 KB, free 366.0 MB)
+18/07/22 17:50:25 INFO BlockManagerInfo: Added broadcast_2_piece0 in memory on 192.168.1.105:42181 (size: 2.1 KB, free: 366.3 MB)
+18/07/22 17:50:25 INFO SparkContext: Created broadcast 2 from broadcast at DAGScheduler.scala:1039
+18/07/22 17:50:25 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 1 (MapPartitionsRDD[2] at map at <console>:27) (first 15 tasks are for partitions Vector(0))
+18/07/22 17:50:25 INFO YarnScheduler: Adding task set 1.0 with 1 tasks
+18/07/22 17:50:25 INFO TaskSetManager: Starting task 0.0 in stage 1.0 (TID 1, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7915 bytes)
+18/07/22 17:50:25 INFO BlockManagerInfo: Added broadcast_2_piece0 in memory on raj-Lenovo-Y50-70:38047 (size: 2.1 KB, free: 93.3 MB)
+18/07/22 17:50:25 INFO TaskSetManager: Finished task 0.0 in stage 1.0 (TID 1) in 208 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/22 17:50:25 INFO YarnScheduler: Removed TaskSet 1.0, whose tasks have all completed, from pool 
+18/07/22 17:50:25 INFO DAGScheduler: ResultStage 1 (take at <console>:26) finished in 0.216 s
+18/07/22 17:50:25 INFO DAGScheduler: Job 1 finished: take at <console>:26, took 0.217978 s
+20130725
+20130725
+20130725
+20130725
+20130725
+20130725
+20130725
+20130725
+20130725
+20130725
+
+
+-----------------------------------------------------
+
+****** for Joining or aggregation,we need to have Pair RDDs with K and V.So the output of map should return a tupple .e..g (1,1)
+val orders = sc.textFile("/public/retail_db/orders")
+
+val orderDatesPairRDD = orders.map(order => {
+ | val o = order.split(",")
+ | (o(0).toInt,o(1).substring(0,10).replace("-","").toInt)
+ | })
+
+
+scala> val orderDatesPairRDD = orders.map(order => {
+     | val o = order.split(",")
+     | (o(0).toInt,o(1).substring(0,10).replace("-","").toInt)
+     |  })
+orderDatesPairRDD: org.apache.spark.rdd.RDD[(Int, Int)] = MapPartitionsRDD[2] at map at <console>:25
+
+scala> orderDatesPairRDD.take(10).foreach(println)
+18/07/22 17:55:08 INFO FileInputFormat: Total input paths to process : 1
+18/07/22 17:55:08 INFO SparkContext: Starting job: take at <console>:26
+18/07/22 17:55:08 INFO DAGScheduler: Got job 0 (take at <console>:26) with 1 output partitions
+18/07/22 17:55:08 INFO DAGScheduler: Final stage: ResultStage 0 (take at <console>:26)
+18/07/22 17:55:08 INFO DAGScheduler: Parents of final stage: List()
+18/07/22 17:55:08 INFO DAGScheduler: Missing parents: List()
+18/07/22 17:55:08 INFO DAGScheduler: Submitting ResultStage 0 (MapPartitionsRDD[2] at map at <console>:25), which has no missing parents
+18/07/22 17:55:08 INFO MemoryStore: Block broadcast_1 stored as values in memory (estimated size 3.4 KB, free 366.0 MB)
+18/07/22 17:55:08 INFO MemoryStore: Block broadcast_1_piece0 stored as bytes in memory (estimated size 2.0 KB, free 366.0 MB)
+18/07/22 17:55:08 INFO BlockManagerInfo: Added broadcast_1_piece0 in memory on 192.168.1.105:40681 (size: 2.0 KB, free: 366.3 MB)
+18/07/22 17:55:08 INFO SparkContext: Created broadcast 1 from broadcast at DAGScheduler.scala:1039
+18/07/22 17:55:08 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 0 (MapPartitionsRDD[2] at map at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/22 17:55:08 INFO YarnScheduler: Adding task set 0.0 with 1 tasks
+18/07/22 17:55:08 INFO TaskSetManager: Starting task 0.0 in stage 0.0 (TID 0, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7915 bytes)
+18/07/22 17:55:08 INFO BlockManagerInfo: Added broadcast_1_piece0 in memory on raj-Lenovo-Y50-70:35979 (size: 2.0 KB, free: 93.3 MB)
+18/07/22 17:55:08 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on raj-Lenovo-Y50-70:35979 (size: 23.3 KB, free: 93.3 MB)
+18/07/22 17:55:09 INFO TaskSetManager: Finished task 0.0 in stage 0.0 (TID 0) in 1107 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/22 17:55:09 INFO YarnScheduler: Removed TaskSet 0.0, whose tasks have all completed, from pool 
+18/07/22 17:55:09 INFO DAGScheduler: ResultStage 0 (take at <console>:26) finished in 1.168 s
+18/07/22 17:55:09 INFO DAGScheduler: Job 0 finished: take at <console>:26, took 1.246493 s
+(1,20130725)
+(2,20130725)
+(3,20130725)
+(4,20130725)
+(5,20130725)
+(6,20130725)
+(7,20130725)
+(8,20130725)
+(9,20130725)
+(10,20130725)
+
+
+val orderItems = sc.textFile("/public/retail_db/order_items")
+val orderItemsPairedRDD = orderItems.map(orderItem => {
+  (orderItem.split(",")(1).toInt, orderItem)
+})
+
+
+scala> orderItemsPairedRDD.take(10).foreach(println)
+18/07/22 17:58:12 INFO SparkContext: Starting job: take at <console>:26
+18/07/22 17:58:12 INFO DAGScheduler: Got job 3 (take at <console>:26) with 1 output partitions
+18/07/22 17:58:12 INFO DAGScheduler: Final stage: ResultStage 3 (take at <console>:26)
+18/07/22 17:58:12 INFO DAGScheduler: Parents of final stage: List()
+18/07/22 17:58:12 INFO DAGScheduler: Missing parents: List()
+18/07/22 17:58:12 INFO DAGScheduler: Submitting ResultStage 3 (MapPartitionsRDD[5] at map at <console>:25), which has no missing parents
+18/07/22 17:58:12 INFO MemoryStore: Block broadcast_5 stored as values in memory (estimated size 3.4 KB, free 365.8 MB)
+18/07/22 17:58:12 INFO MemoryStore: Block broadcast_5_piece0 stored as bytes in memory (estimated size 2.0 KB, free 365.8 MB)
+18/07/22 17:58:12 INFO BlockManagerInfo: Added broadcast_5_piece0 in memory on 192.168.1.105:40681 (size: 2.0 KB, free: 366.3 MB)
+18/07/22 17:58:12 INFO SparkContext: Created broadcast 5 from broadcast at DAGScheduler.scala:1039
+18/07/22 17:58:12 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 3 (MapPartitionsRDD[5] at map at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/22 17:58:12 INFO YarnScheduler: Adding task set 3.0 with 1 tasks
+18/07/22 17:58:12 INFO TaskSetManager: Starting task 0.0 in stage 3.0 (TID 3, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7920 bytes)
+18/07/22 17:58:12 INFO BlockManagerInfo: Added broadcast_5_piece0 in memory on raj-Lenovo-Y50-70:35979 (size: 2.0 KB, free: 93.3 MB)
+18/07/22 17:58:12 INFO TaskSetManager: Finished task 0.0 in stage 3.0 (TID 3) in 63 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/22 17:58:12 INFO YarnScheduler: Removed TaskSet 3.0, whose tasks have all completed, from pool 
+18/07/22 17:58:12 INFO DAGScheduler: ResultStage 3 (take at <console>:26) finished in 0.069 s
+18/07/22 17:58:12 INFO DAGScheduler: Job 3 finished: take at <console>:26, took 0.071719 s
+(1,1,1,957,1,299.98,299.98)
+(2,2,2,1073,1,199.99,199.99)
+(2,3,2,502,5,250.0,50.0)
+(2,4,2,403,1,129.99,129.99)
+(4,5,4,897,2,49.98,24.99)
+(4,6,4,365,5,299.95,59.99)
+(4,7,4,502,3,150.0,50.0)
+(4,8,4,1014,4,199.92,49.98)
+(5,9,5,957,1,299.98,299.98)
+(5,10,5,365,5,299.95,59.99)
+
+-----------------------------
+
+
+flatMap
+flatMap is used for
+
+	Performing row level transformations where one record will be transformed into array of records
+	Number of records in output RDD will be typically more than number of records in input RDD
+
+
+scala> val l = List("Hello", "How are you doing", "Let us perform word count", "As part of the word count program", "we will see how many times each word repeat")
+l: List[String] = List(Hello, How are you doing, Let us perform word count, As part of the word count program, we will see how many times each word repeat)
+
+scala> 
+
+scala> val l_rdd = sc.parallelize(l)
+l_rdd: org.apache.spark.rdd.RDD[String] = ParallelCollectionRDD[6] at parallelize at <console>:26
+
+scala> val l_map = l_rdd.map(ele => ele.split(" "))
+l_map: org.apache.spark.rdd.RDD[Array[String]] = MapPartitionsRDD[7] at map at <console>:25
+
+scala> l_map.take(5).foreach(println)
+[Ljava.lang.String;@74a65d54
+[Ljava.lang.String;@49f116d9
+[Ljava.lang.String;@1d268d97
+[Ljava.lang.String;@76e87fa0
+[Ljava.lang.String;@3062c0d4
+
+scala> val l_flatMap = l_rdd.flatMap(ele => ele.split(" "))
+l_flatMap: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[8] at flatMap at <console>:25
+
+scala> l_flatMap.take(5).foreach(println)
+Hello
+How
+are
+you
+doing
+
+scala> l_map.collect.foreach(println)
+[Ljava.lang.String;@4919a94a
+[Ljava.lang.String;@332d2db
+[Ljava.lang.String;@4fe8c3f
+[Ljava.lang.String;@3f3bdc7e
+[Ljava.lang.String;@3b6c712a
+
+scala> l_flatMap.collect.foreach(println)
+Hello
+How
+are
+you
+doing
+Let
+us
+perform
+word
+count
+As
+part
+of
+the
+word
+count
+program
+we
+will
+see
+how
+many
+times
+each
+word
+repeat
+
+scala> val wordcount = l_flatMap.map(word => (word, "")).
+++                         countByValue            intersection             productElement                       subtract          
+aggregate                  countByValueApprox      isCheckpointed           productIterator                      subtractByKey     
+aggregateByKey             dependencies            isEmpty                  productPrefix                        take              
+cache                      distinct                iterator                 randomSplit                          takeAsync         
+canEqual                   filter                  join                     reduce                               takeOrdered       
+cartesian                  filterByRange           keyBy                    reduceByKey                          takeSample        
+checkpoint                 first                   keys                     reduceByKeyLocally                   toDF              
+coalesce                   flatMap                 leftOuterJoin            repartition                          toDS              
+cogroup                    flatMapValues           localCheckpoint          repartitionAndSortWithinPartitions   toDebugString     
+collect                    fold                    lookup                   rightOuterJoin                       toJavaRDD         
+collectAsMap               foldByKey               map                      sample                               toLocalIterator   
+collectAsync               foreach                 mapPartitions            sampleByKey                          toString          
+combineByKey               foreachAsync            mapPartitionsWithIndex   sampleByKeyExact                     top               
+combineByKeyWithClassTag   foreachPartition        mapValues                saveAsHadoopDataset                  treeAggregate     
+compute                    foreachPartitionAsync   max                      saveAsHadoopFile                     treeReduce        
+context                    fullOuterJoin           min                      saveAsNewAPIHadoopDataset            union             
+copy                       getCheckpointFile       name                     saveAsNewAPIHadoopFile               unpersist         
+count                      getNumPartitions        partitionBy              saveAsObjectFile                     values            
+countApprox                getStorageLevel         partitioner              saveAsSequenceFile                   zip               
+countApproxDistinct        glom                    partitions               saveAsTextFile                       zipPartitions     
+countApproxDistinctByKey   groupBy                 persist                  setName                              zipWithIndex      
+countAsync                 groupByKey              pipe                     sortBy                               zipWithUniqueId   
+countByKey                 groupWith               preferredLocations       sortByKey                                              
+countByKeyApprox           id                      productArity             sparkContext                                           
+
+scala> val wordcount = l_flatMap.map(word => (word, "")).
+!=                         countByKey              groupByKey               persist                              subtract          
+##                         countByKeyApprox        groupWith                pipe                                 subtractByKey     
++                          countByValue            hashCode                 preferredLocations                   synchronized      
+++                         countByValueApprox      id                       productArity                         take              
+->                         dependencies            intersection             productElement                       takeAsync         
+==                         distinct                isCheckpointed           productIterator                      takeOrdered       
+aggregate                  ensuring                isEmpty                  productPrefix                        takeSample        
+aggregateByKey             eq                      isInstanceOf             randomSplit                          toDF              
+asInstanceOf               equals                  iterator                 reduce                               toDS              
+cache                      filter                  join                     reduceByKey                          toDebugString     
+canEqual                   filterByRange           keyBy                    reduceByKeyLocally                   toJavaRDD         
+cartesian                  first                   keys                     repartition                          toLocalIterator   
+checkpoint                 flatMap                 leftOuterJoin            repartitionAndSortWithinPartitions   toString          
+coalesce                   flatMapValues           localCheckpoint          rightOuterJoin                       top               
+cogroup                    fold                    lookup                   sample                               treeAggregate     
+collect                    foldByKey               map                      sampleByKey                          treeReduce        
+collectAsMap               foreach                 mapPartitions            sampleByKeyExact                     union             
+collectAsync               foreachAsync            mapPartitionsWithIndex   saveAsHadoopDataset                  unpersist         
+combineByKey               foreachPartition        mapValues                saveAsHadoopFile                     values            
+combineByKeyWithClassTag   foreachPartitionAsync   max                      saveAsNewAPIHadoopDataset            wait              
+compute                    formatted               min                      saveAsNewAPIHadoopFile               zip               
+context                    fullOuterJoin           name                     saveAsObjectFile                     zipPartitions     
+copy                       getCheckpointFile       ne                       saveAsSequenceFile                   zipWithIndex      
+count                      getClass                notify                   saveAsTextFile                       zipWithUniqueId   
+countApprox                getNumPartitions        notifyAll                setName                              →                 
+countApproxDistinct        getStorageLevel         partitionBy              sortBy                                                 
+countApproxDistinctByKey   glom                    partitioner              sortByKey                                              
+countAsync                 groupBy                 partitions               sparkContext                                           
+
+
+scala> val wordcount = l_flatMap.map(word => (word, "")).countByKey
+wordcount: scala.collection.Map[String,Long] = Map(program -> 1, count -> 2, are -> 1, How -> 1, Let -> 1, us -> 1, each -> 1, you -> 1, doing -> 1, how -> 1, Hello -> 1, will -> 1, perform -> 1, times -> 1, part -> 1, repeat -> 1, As -> 1, many -> 1, see -> 1, word -> 3, we -> 1, of -> 1, the -> 1)
+
+scala> val wordcount = l_flatMap.map(word => (word, "")).countByKe18/07/22 18:23:26 INFO ContextCleaner: Cleaned accumulator 254
+
+
+scala> val wordcount = l_flatMap.map(word => (word, 1)).countByKey
+wordcount: scala.collection.Map[String,Long] = Map(program -> 1, count -> 2, are -> 1, How -> 1, Let -> 1, us -> 1, each -> 1, you -> 1, doing -> 1, how -> 1, Hello -> 1, will -> 1, perform -> 1, times -> 1, part -> 1, repeat -> 1, As -> 1, many -> 1, see -> 1, word -> 3, we -> 1, of -> 1, the -> 1)
+
+
+
+*** To use countByKey we need to  have a tupple (K,V)
+
+
+
