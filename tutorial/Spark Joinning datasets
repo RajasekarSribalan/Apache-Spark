@@ -1,0 +1,1391 @@
+Joining data sets
+
+Spark supports all possible join operations
+
+Inner join
+Outer join
+
+Here are the steps involved in using join operations
+
+	Read data from files related to 2 data sets and convert into RDD
+	Apply map to transform each data set into paired RDD
+	Perform join using the paired RDDs
+	Apply further transformations using relevant APIs
+
+
+To join there should be a common key,Based on that both data sets can be joinned.
+
+** Inner Join ***
+
+
+join(otherDataset, [numPartitions])	
+	When called on datasets of type (K, V) and (K, W), returns a dataset of (K, (V, W)) pairs with all pairs of elements for each key. Outer joins are supported through leftOuterJoin, rightOuterJoin, and fullOuterJoin.
+
+Before join,we need to convert our data into PairedRDDs or K,V pairs.
+
+Dont forget,while tranformation pls change the format of the input accordingly.
+
+scala> val orders = sc.textFile("/public/retail_db/orders")
+18/07/23 07:55:41 INFO MemoryStore: Block broadcast_0 stored as values in memory (estimated size 240.3 KB, free 366.1 MB)
+18/07/23 07:55:41 INFO MemoryStore: Block broadcast_0_piece0 stored as bytes in memory (estimated size 23.3 KB, free 366.0 MB)
+18/07/23 07:55:41 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on 192.168.1.105:41787 (size: 23.3 KB, free: 366.3 MB)
+18/07/23 07:55:41 INFO SparkContext: Created broadcast 0 from textFile at <console>:24
+orders: org.apache.spark.rdd.RDD[String] = /public/retail_db/orders MapPartitionsRDD[1] at textFile at <console>:24
+
+scala> val orderItems = sc.textFile("/public/retail_db/order_items")
+18/07/23 07:56:02 INFO MemoryStore: Block broadcast_1 stored as values in memory (estimated size 240.4 KB, free 365.8 MB)
+18/07/23 07:56:02 INFO MemoryStore: Block broadcast_1_piece0 stored as bytes in memory (estimated size 23.3 KB, free 365.8 MB)
+18/07/23 07:56:02 INFO BlockManagerInfo: Added broadcast_1_piece0 in memory on 192.168.1.105:41787 (size: 23.3 KB, free: 366.3 MB)
+18/07/23 07:56:02 INFO SparkContext: Created broadcast 1 from textFile at <console>:24
+orderItems: org.apache.spark.rdd.RDD[String] = /public/retail_db/order_items MapPartitionsRDD[3] at textFile at <console>:24
+
+scala> val ordersMap = orders.map(order => {
+     | (order.split(",")(0).toInt, order.split(",")(1).substring(0, 10))
+     | })
+ordersMap: org.apache.spark.rdd.RDD[(Int, String)] = MapPartitionsRDD[4] at map at <console>:25
+
+scala> order
+orderItems   orders   ordersMap
+
+scala> order
+orderItems   orders   ordersMap
+
+scala> ordersMap.take(10).foreach(prinln)
+<console>:26: error: not found: value prinln
+       ordersMap.take(10).foreach(prinln)
+                                  ^
+
+scala> ordersMap.take(10).foreach(println)
+18/07/23 07:57:08 INFO FileInputFormat: Total input paths to process : 1
+18/07/23 07:57:08 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 07:57:08 INFO DAGScheduler: Got job 0 (take at <console>:26) with 1 output partitions
+18/07/23 07:57:08 INFO DAGScheduler: Final stage: ResultStage 0 (take at <console>:26)
+18/07/23 07:57:08 INFO DAGScheduler: Parents of final stage: List()
+18/07/23 07:57:08 INFO DAGScheduler: Missing parents: List()
+18/07/23 07:57:08 INFO DAGScheduler: Submitting ResultStage 0 (MapPartitionsRDD[4] at map at <console>:25), which has no missing parents
+18/07/23 07:57:08 INFO MemoryStore: Block broadcast_2 stored as values in memory (estimated size 3.4 KB, free 365.8 MB)
+18/07/23 07:57:08 INFO MemoryStore: Block broadcast_2_piece0 stored as bytes in memory (estimated size 2.0 KB, free 365.8 MB)
+18/07/23 07:57:08 INFO BlockManagerInfo: Added broadcast_2_piece0 in memory on 192.168.1.105:41787 (size: 2.0 KB, free: 366.3 MB)
+18/07/23 07:57:08 INFO SparkContext: Created broadcast 2 from broadcast at DAGScheduler.scala:1039
+18/07/23 07:57:09 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 0 (MapPartitionsRDD[4] at map at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/23 07:57:09 INFO YarnScheduler: Adding task set 0.0 with 1 tasks
+18/07/23 07:57:09 INFO TaskSetManager: Starting task 0.0 in stage 0.0 (TID 0, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7915 bytes)
+18/07/23 07:57:09 INFO BlockManagerInfo: Added broadcast_2_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.0 KB, free: 93.3 MB)
+18/07/23 07:57:09 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 23.3 KB, free: 93.3 MB)
+18/07/23 07:57:10 INFO TaskSetManager: Finished task 0.0 in stage 0.0 (TID 0) in 1405 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 07:57:10 INFO YarnScheduler: Removed TaskSet 0.0, whose tasks have all completed, from pool 
+18/07/23 07:57:10 INFO DAGScheduler: ResultStage 0 (take at <console>:26) finished in 1.759 s
+18/07/23 07:57:10 INFO DAGScheduler: Job 0 finished: take at <console>:26, took 2.079097 s
+(1,2013-07-25)
+(2,2013-07-25)
+(3,2013-07-25)
+(4,2013-07-25)
+(5,2013-07-25)
+(6,2013-07-25)
+(7,2013-07-25)
+(8,2013-07-25)
+(9,2013-07-25)
+(10,2013-07-25)
+
+scala> val orderItemsMap = orderItems.map(orderItem => {
+     |   val oi = orderItem.split(",")
+     |  (oi(1).toInt, oi(4).toFloat)
+     | })
+orderItemsMap: org.apache.spark.rdd.RDD[(Int, Float)] = MapPartitionsRDD[5] at map at <console>:25
+
+scala> orderItemsMap.take(10).foreach(println)
+18/07/23 07:58:21 INFO BlockManagerInfo: Removed broadcast_2_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.0 KB, free: 93.3 MB)
+18/07/23 07:58:21 INFO BlockManagerInfo: Removed broadcast_2_piece0 on 192.168.1.105:41787 in memory (size: 2.0 KB, free: 366.3 MB)
+18/07/23 07:58:21 INFO FileInputFormat: Total input paths to process : 1
+18/07/23 07:58:21 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 07:58:21 INFO DAGScheduler: Got job 1 (take at <console>:26) with 1 output partitions
+18/07/23 07:58:21 INFO DAGScheduler: Final stage: ResultStage 1 (take at <console>:26)
+18/07/23 07:58:21 INFO DAGScheduler: Parents of final stage: List()
+18/07/23 07:58:21 INFO DAGScheduler: Missing parents: List()
+18/07/23 07:58:21 INFO DAGScheduler: Submitting ResultStage 1 (MapPartitionsRDD[5] at map at <console>:25), which has no missing parents
+18/07/23 07:58:21 INFO MemoryStore: Block broadcast_3 stored as values in memory (estimated size 3.4 KB, free 365.8 MB)
+18/07/23 07:58:21 INFO MemoryStore: Block broadcast_3_piece0 stored as bytes in memory (estimated size 2.0 KB, free 365.8 MB)
+18/07/23 07:58:21 INFO BlockManagerInfo: Added broadcast_3_piece0 in memory on 192.168.1.105:41787 (size: 2.0 KB, free: 366.3 MB)
+18/07/23 07:58:21 INFO SparkContext: Created broadcast 3 from broadcast at DAGScheduler.scala:1039
+18/07/23 07:58:21 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 1 (MapPartitionsRDD[5] at map at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/23 07:58:21 INFO YarnScheduler: Adding task set 1.0 with 1 tasks
+18/07/23 07:58:21 INFO TaskSetManager: Starting task 0.0 in stage 1.0 (TID 1, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7920 bytes)
+18/07/23 07:58:21 INFO BlockManagerInfo: Added broadcast_3_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.0 KB, free: 93.3 MB)
+18/07/23 07:58:21 INFO BlockManagerInfo: Added broadcast_1_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 23.3 KB, free: 93.3 MB)
+18/07/23 07:58:21 INFO TaskSetManager: Finished task 0.0 in stage 1.0 (TID 1) in 189 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 07:58:21 INFO YarnScheduler: Removed TaskSet 1.0, whose tasks have all completed, from pool 
+18/07/23 07:58:21 INFO DAGScheduler: ResultStage 1 (take at <console>:26) finished in 0.259 s
+18/07/23 07:58:21 INFO DAGScheduler: Job 1 finished: take at <console>:26, took 0.261725 s
+(1,299.98)
+(2,199.99)
+(2,250.0)
+(2,129.99)
+(4,49.98)
+(4,299.95)
+(4,150.0)
+(4,199.92)
+(5,299.98)
+(5,299.95)
+
+scala> val ordersJoin = ordersMap.join(orderItemsMap)
+ordersJoin: org.apache.spark.rdd.RDD[(Int, (String, Float))] = MapPartitionsRDD[8] at join at <console>:27
+
+scala> ordersJoin.take(10).foreach(println)
+18/07/23 07:59:27 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 07:59:27 INFO DAGScheduler: Registering RDD 5 (map at <console>:25)
+18/07/23 07:59:27 INFO DAGScheduler: Registering RDD 4 (map at <console>:25)
+18/07/23 07:59:27 INFO DAGScheduler: Got job 2 (take at <console>:26) with 1 output partitions
+18/07/23 07:59:27 INFO DAGScheduler: Final stage: ResultStage 4 (take at <console>:26)
+18/07/23 07:59:27 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 2, ShuffleMapStage 3)
+18/07/23 07:59:27 INFO DAGScheduler: Missing parents: List(ShuffleMapStage 2, ShuffleMapStage 3)
+18/07/23 07:59:27 INFO DAGScheduler: Submitting ShuffleMapStage 2 (MapPartitionsRDD[5] at map at <console>:25), which has no missing parents
+18/07/23 07:59:27 INFO MemoryStore: Block broadcast_4 stored as values in memory (estimated size 4.0 KB, free 365.8 MB)
+18/07/23 07:59:27 INFO MemoryStore: Block broadcast_4_piece0 stored as bytes in memory (estimated size 2.4 KB, free 365.8 MB)
+18/07/23 07:59:27 INFO BlockManagerInfo: Added broadcast_4_piece0 in memory on 192.168.1.105:41787 (size: 2.4 KB, free: 366.3 MB)
+18/07/23 07:59:27 INFO SparkContext: Created broadcast 4 from broadcast at DAGScheduler.scala:1039
+18/07/23 07:59:27 INFO DAGScheduler: Submitting 2 missing tasks from ShuffleMapStage 2 (MapPartitionsRDD[5] at map at <console>:25) (first 15 tasks are for partitions Vector(0, 1))
+18/07/23 07:59:27 INFO YarnScheduler: Adding task set 2.0 with 2 tasks
+18/07/23 07:59:27 INFO DAGScheduler: Submitting ShuffleMapStage 3 (MapPartitionsRDD[4] at map at <console>:25), which has no missing parents
+18/07/23 07:59:27 INFO TaskSetManager: Starting task 0.0 in stage 2.0 (TID 2, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7909 bytes)
+18/07/23 07:59:27 INFO MemoryStore: Block broadcast_5 stored as values in memory (estimated size 4.0 KB, free 365.8 MB)
+18/07/23 07:59:27 INFO MemoryStore: Block broadcast_5_piece0 stored as bytes in memory (estimated size 2.4 KB, free 365.8 MB)
+18/07/23 07:59:27 INFO BlockManagerInfo: Added broadcast_5_piece0 in memory on 192.168.1.105:41787 (size: 2.4 KB, free: 366.2 MB)
+18/07/23 07:59:27 INFO SparkContext: Created broadcast 5 from broadcast at DAGScheduler.scala:1039
+18/07/23 07:59:27 INFO DAGScheduler: Submitting 2 missing tasks from ShuffleMapStage 3 (MapPartitionsRDD[4] at map at <console>:25) (first 15 tasks are for partitions Vector(0, 1))
+18/07/23 07:59:27 INFO YarnScheduler: Adding task set 3.0 with 2 tasks
+18/07/23 07:59:27 INFO BlockManagerInfo: Added broadcast_4_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.4 KB, free: 93.3 MB)
+18/07/23 07:59:27 INFO TaskSetManager: Starting task 1.0 in stage 2.0 (TID 3, raj-Lenovo-Y50-70, executor 1, partition 1, NODE_LOCAL, 7909 bytes)
+18/07/23 07:59:27 INFO TaskSetManager: Finished task 0.0 in stage 2.0 (TID 2) in 489 ms on raj-Lenovo-Y50-70 (executor 1) (1/2)
+18/07/23 07:59:28 INFO TaskSetManager: Starting task 0.0 in stage 3.0 (TID 4, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7904 bytes)
+18/07/23 07:59:28 INFO TaskSetManager: Finished task 1.0 in stage 2.0 (TID 3) in 237 ms on raj-Lenovo-Y50-70 (executor 1) (2/2)
+18/07/23 07:59:28 INFO YarnScheduler: Removed TaskSet 2.0, whose tasks have all completed, from pool 
+18/07/23 07:59:28 INFO DAGScheduler: ShuffleMapStage 2 (map at <console>:25) finished in 0.827 s
+18/07/23 07:59:28 INFO DAGScheduler: looking for newly runnable stages
+18/07/23 07:59:28 INFO DAGScheduler: running: Set(ShuffleMapStage 3)
+18/07/23 07:59:28 INFO DAGScheduler: waiting: Set(ResultStage 4)
+18/07/23 07:59:28 INFO DAGScheduler: failed: Set()
+18/07/23 07:59:28 INFO BlockManagerInfo: Added broadcast_5_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.4 KB, free: 93.2 MB)
+18/07/23 07:59:28 INFO TaskSetManager: Starting task 1.0 in stage 3.0 (TID 5, raj-Lenovo-Y50-70, executor 1, partition 1, NODE_LOCAL, 7904 bytes)
+18/07/23 07:59:28 INFO TaskSetManager: Finished task 0.0 in stage 3.0 (TID 4) in 110 ms on raj-Lenovo-Y50-70 (executor 1) (1/2)
+18/07/23 07:59:28 INFO TaskSetManager: Finished task 1.0 in stage 3.0 (TID 5) in 62 ms on raj-Lenovo-Y50-70 (executor 1) (2/2)
+18/07/23 07:59:28 INFO YarnScheduler: Removed TaskSet 3.0, whose tasks have all completed, from pool 
+18/07/23 07:59:28 INFO DAGScheduler: ShuffleMapStage 3 (map at <console>:25) finished in 0.887 s
+18/07/23 07:59:28 INFO DAGScheduler: looking for newly runnable stages
+18/07/23 07:59:28 INFO DAGScheduler: running: Set()
+18/07/23 07:59:28 INFO DAGScheduler: waiting: Set(ResultStage 4)
+18/07/23 07:59:28 INFO DAGScheduler: failed: Set()
+18/07/23 07:59:28 INFO DAGScheduler: Submitting ResultStage 4 (MapPartitionsRDD[8] at join at <console>:27), which has no missing parents
+18/07/23 07:59:28 INFO MemoryStore: Block broadcast_6 stored as values in memory (estimated size 3.3 KB, free 365.8 MB)
+18/07/23 07:59:28 INFO MemoryStore: Block broadcast_6_piece0 stored as bytes in memory (estimated size 1958.0 B, free 365.8 MB)
+18/07/23 07:59:28 INFO BlockManagerInfo: Added broadcast_6_piece0 in memory on 192.168.1.105:41787 (size: 1958.0 B, free: 366.2 MB)
+18/07/23 07:59:28 INFO SparkContext: Created broadcast 6 from broadcast at DAGScheduler.scala:1039
+18/07/23 07:59:28 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 4 (MapPartitionsRDD[8] at join at <console>:27) (first 15 tasks are for partitions Vector(0))
+18/07/23 07:59:28 INFO YarnScheduler: Adding task set 4.0 with 1 tasks
+18/07/23 07:59:28 INFO TaskSetManager: Starting task 0.0 in stage 4.0 (TID 6, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 07:59:28 INFO BlockManagerInfo: Added broadcast_6_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 1958.0 B, free: 93.2 MB)
+18/07/23 07:59:28 INFO MapOutputTrackerMasterEndpoint: Asked to send map output locations for shuffle 0 to 192.168.1.105:60700
+18/07/23 07:59:28 INFO MapOutputTrackerMasterEndpoint: Asked to send map output locations for shuffle 1 to 192.168.1.105:60700
+18/07/23 07:59:29 INFO TaskSetManager: Finished task 0.0 in stage 4.0 (TID 6) in 1025 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 07:59:29 INFO YarnScheduler: Removed TaskSet 4.0, whose tasks have all completed, from pool 
+18/07/23 07:59:29 INFO DAGScheduler: ResultStage 4 (take at <console>:26) finished in 1.032 s
+18/07/23 07:59:29 INFO DAGScheduler: Job 2 finished: take at <console>:26, took 2.044536 s
+(41234,(2014-04-04,109.94))
+(65722,(2014-05-23,119.98))
+(65722,(2014-05-23,400.0))
+(65722,(2014-05-23,399.98))
+(65722,(2014-05-23,199.95))
+(65722,(2014-05-23,199.98))
+(28730,(2014-01-18,299.95))
+(28730,(2014-01-18,50.0))
+(68522,(2014-06-05,329.99))
+(23776,(2013-12-20,199.99))
+
+scala> ordersJoin.first.foreach(println)
+<console>:26: error: value foreach is not a member of (Int, (String, Float))
+       ordersJoin.first.foreach(println)
+                        ^
+
+scala> ordersJoin.first
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 23
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 71
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 102
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 72
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 123
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 64
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 52
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 75
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 77
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 113
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 49
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 55
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 78
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 94
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 70
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 33
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 67
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 111
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 107
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 59
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 105
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 97
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 86
+18/07/23 08:02:14 INFO BlockManagerInfo: Removed broadcast_4_piece0 on 192.168.1.105:41787 in memory (size: 2.4 KB, free: 366.2 MB)
+18/07/23 08:02:14 INFO BlockManagerInfo: Removed broadcast_4_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.4 KB, free: 93.2 MB)
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 43
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 99
+18/07/23 08:02:14 INFO BlockManagerInfo: Removed broadcast_5_piece0 on 192.168.1.105:41787 in memory (size: 2.4 KB, free: 366.3 MB)
+18/07/23 08:02:14 INFO BlockManagerInfo: Removed broadcast_5_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.4 KB, free: 93.3 MB)
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 116
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 27
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 50
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 53
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 84
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 65
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 82
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 117
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 29
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 57
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 25
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 39
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 28
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 56
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 36
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 118
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 101
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 42
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 87
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 47
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 83
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 98
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 88
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 95
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 62
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 110
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 121
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 90
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 46
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 112
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 93
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 73
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 89
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 51
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 38
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 61
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 108
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 31
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 114
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 32
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 92
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 122
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 45
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 115
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 124
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 37
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 119
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 60
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 69
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 30
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 54
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 41
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 40
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 68
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 74
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 35
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 79
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 91
+18/07/23 08:02:14 INFO BlockManagerInfo: Removed broadcast_3_piece0 on 192.168.1.105:41787 in memory (size: 2.0 KB, free: 366.3 MB)
+18/07/23 08:02:14 INFO BlockManagerInfo: Removed broadcast_3_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.0 KB, free: 93.3 MB)
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 44
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 106
+18/07/23 08:02:14 INFO BlockManagerInfo: Removed broadcast_6_piece0 on 192.168.1.105:41787 in memory (size: 1958.0 B, free: 366.3 MB)
+18/07/23 08:02:14 INFO BlockManagerInfo: Removed broadcast_6_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 1958.0 B, free: 93.3 MB)
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 85
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 26
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 34
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 48
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 66
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 63
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 103
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 80
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 104
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 76
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 109
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 58
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 81
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 120
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 100
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 96
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 14
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 13
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 4
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 5
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 9
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 17
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 24
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 3
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 2
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 7
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 11
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 21
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 10
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 22
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 18
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 19
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 15
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 1
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 16
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 20
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 12
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 6
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 0
+18/07/23 08:02:14 INFO ContextCleaner: Cleaned accumulator 8
+18/07/23 08:02:14 INFO SparkContext: Starting job: first at <console>:26
+18/07/23 08:02:14 INFO DAGScheduler: Got job 3 (first at <console>:26) with 1 output partitions
+18/07/23 08:02:14 INFO DAGScheduler: Final stage: ResultStage 7 (first at <console>:26)
+18/07/23 08:02:14 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 5, ShuffleMapStage 6)
+18/07/23 08:02:14 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:02:14 INFO DAGScheduler: Submitting ResultStage 7 (MapPartitionsRDD[8] at join at <console>:27), which has no missing parents
+18/07/23 08:02:14 INFO MemoryStore: Block broadcast_7 stored as values in memory (estimated size 3.3 KB, free 365.8 MB)
+18/07/23 08:02:14 INFO MemoryStore: Block broadcast_7_piece0 stored as bytes in memory (estimated size 1958.0 B, free 365.8 MB)
+18/07/23 08:02:14 INFO BlockManagerInfo: Added broadcast_7_piece0 in memory on 192.168.1.105:41787 (size: 1958.0 B, free: 366.3 MB)
+18/07/23 08:02:14 INFO SparkContext: Created broadcast 7 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:02:14 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 7 (MapPartitionsRDD[8] at join at <console>:27) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:02:14 INFO YarnScheduler: Adding task set 7.0 with 1 tasks
+18/07/23 08:02:14 INFO TaskSetManager: Starting task 0.0 in stage 7.0 (TID 7, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:02:14 INFO BlockManagerInfo: Added broadcast_7_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 1958.0 B, free: 93.3 MB)
+18/07/23 08:02:14 INFO TaskSetManager: Finished task 0.0 in stage 7.0 (TID 7) in 170 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:02:14 INFO YarnScheduler: Removed TaskSet 7.0, whose tasks have all completed, from pool 
+18/07/23 08:02:14 INFO DAGScheduler: ResultStage 7 (first at <console>:26) finished in 0.220 s
+18/07/23 08:02:14 INFO DAGScheduler: Job 3 finished: first at <console>:26, took 0.221758 s
+res5: (Int, (String, Float)) = (41234,(2014-04-04,109.94))
+
+
+
+********** Outer Join ***************
+We need to learn Joins
+LeftOuterJoin and RightOuterJOin are same ( 1 to many relations)
+FullOuterJoin (many to many relations)
+
+Problem statement : Get all the orders which do not have corresponding entries in order Items
+
+scala> val orders = sc.textFile("/public/retail_db/orders")
+18/07/23 08:11:07 INFO MemoryStore: Block broadcast_8 stored as values in memory (estimated size 240.4 KB, free 365.5 MB)
+18/07/23 08:11:07 INFO MemoryStore: Block broadcast_8_piece0 stored as bytes in memory (estimated size 23.3 KB, free 365.5 MB)
+18/07/23 08:11:07 INFO BlockManagerInfo: Added broadcast_8_piece0 in memory on 192.168.1.105:41787 (size: 23.3 KB, free: 366.2 MB)
+18/07/23 08:11:07 INFO SparkContext: Created broadcast 8 from textFile at <console>:24
+orders: org.apache.spark.rdd.RDD[String] = /public/retail_db/orders MapPartitionsRDD[10] at textFile at <console>:24
+
+scala> val orderItems = sc.textFile("/public/retail_db/order_items")
+18/07/23 08:11:15 INFO MemoryStore: Block broadcast_9 stored as values in memory (estimated size 240.4 KB, free 365.3 MB)
+18/07/23 08:11:15 INFO MemoryStore: Block broadcast_9_piece0 stored as bytes in memory (estimated size 23.3 KB, free 365.3 MB)
+18/07/23 08:11:15 INFO BlockManagerInfo: Added broadcast_9_piece0 in memory on 192.168.1.105:41787 (size: 23.3 KB, free: 366.2 MB)
+18/07/23 08:11:15 INFO SparkContext: Created broadcast 9 from textFile at <console>:24
+orderItems: org.apache.spark.rdd.RDD[String] = /public/retail_db/order_items MapPartitionsRDD[12] at textFile at <console>:24
+
+scala> val ordersMap = orders.map(order => {
+     |  (order.split(",")(0).toInt, order)
+     | })
+ordersMap: org.apache.spark.rdd.RDD[(Int, String)] = MapPartitionsRDD[13] at map at <console>:25
+
+scala> val orderItemsMap = orderItems.map(orderItem => {
+     | val oi = orderItem.split(",")
+     | })
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 133
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 125
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 143
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 137
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 128
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 141
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 139
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 134
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 142
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 149
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 140
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 147
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 138
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 136
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 148
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 131
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 146
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 135
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 127
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 132
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 126
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 144
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 130
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 145
+18/07/23 08:11:50 INFO ContextCleaner: Cleaned accumulator 129
+18/07/23 08:11:50 INFO BlockManagerInfo: Removed broadcast_7_piece0 on 192.168.1.105:41787 in memory (size: 1958.0 B, free: 366.2 MB)
+18/07/23 08:11:50 INFO BlockManagerInfo: Removed broadcast_7_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 1958.0 B, free: 93.3 MB)
+orderItemsMap: org.apache.spark.rdd.RDD[Unit] = MapPartitionsRDD[14] at map at <console>:25
+
+scala> ordersMap.take(10).foreach(println)
+18/07/23 08:13:35 INFO FileInputFormat: Total input paths to process : 1
+18/07/23 08:13:35 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 08:13:35 INFO DAGScheduler: Got job 4 (take at <console>:26) with 1 output partitions
+18/07/23 08:13:35 INFO DAGScheduler: Final stage: ResultStage 8 (take at <console>:26)
+18/07/23 08:13:35 INFO DAGScheduler: Parents of final stage: List()
+18/07/23 08:13:35 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:13:35 INFO DAGScheduler: Submitting ResultStage 8 (MapPartitionsRDD[13] at map at <console>:25), which has no missing parents
+18/07/23 08:13:35 INFO MemoryStore: Block broadcast_10 stored as values in memory (estimated size 3.4 KB, free 365.3 MB)
+18/07/23 08:13:35 INFO MemoryStore: Block broadcast_10_piece0 stored as bytes in memory (estimated size 2.0 KB, free 365.3 MB)
+18/07/23 08:13:35 INFO BlockManagerInfo: Added broadcast_10_piece0 in memory on 192.168.1.105:41787 (size: 2.0 KB, free: 366.2 MB)
+18/07/23 08:13:35 INFO SparkContext: Created broadcast 10 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:13:35 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 8 (MapPartitionsRDD[13] at map at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:13:35 INFO YarnScheduler: Adding task set 8.0 with 1 tasks
+18/07/23 08:13:35 INFO TaskSetManager: Starting task 0.0 in stage 8.0 (TID 8, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7915 bytes)
+18/07/23 08:13:35 INFO BlockManagerInfo: Added broadcast_10_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.0 KB, free: 93.3 MB)
+18/07/23 08:13:35 INFO BlockManagerInfo: Added broadcast_8_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 23.3 KB, free: 93.2 MB)
+18/07/23 08:13:35 INFO TaskSetManager: Finished task 0.0 in stage 8.0 (TID 8) in 84 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:13:35 INFO YarnScheduler: Removed TaskSet 8.0, whose tasks have all completed, from pool 
+18/07/23 08:13:35 INFO DAGScheduler: ResultStage 8 (take at <console>:26) finished in 0.150 s
+18/07/23 08:13:35 INFO DAGScheduler: Job 4 finished: take at <console>:26, took 0.152066 s
+(1,1,2013-07-25 00:00:00.0,11599,CLOSED)
+(2,2,2013-07-25 00:00:00.0,256,PENDING_PAYMENT)
+(3,3,2013-07-25 00:00:00.0,12111,COMPLETE)
+(4,4,2013-07-25 00:00:00.0,8827,CLOSED)
+(5,5,2013-07-25 00:00:00.0,11318,COMPLETE)
+(6,6,2013-07-25 00:00:00.0,7130,COMPLETE)
+(7,7,2013-07-25 00:00:00.0,4530,COMPLETE)
+(8,8,2013-07-25 00:00:00.0,2911,PROCESSING)
+(9,9,2013-07-25 00:00:00.0,5657,PENDING_PAYMENT)
+(10,10,2013-07-25 00:00:00.0,5648,PENDING_PAYMENT)
+
+scala> orderItemsMap.take(10).foreach(println)
+18/07/23 08:13:43 INFO FileInputFormat: Total input paths to process : 1
+18/07/23 08:13:43 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 08:13:43 INFO DAGScheduler: Got job 5 (take at <console>:26) with 1 output partitions
+18/07/23 08:13:43 INFO DAGScheduler: Final stage: ResultStage 9 (take at <console>:26)
+18/07/23 08:13:43 INFO DAGScheduler: Parents of final stage: List()
+18/07/23 08:13:43 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:13:43 INFO DAGScheduler: Submitting ResultStage 9 (MapPartitionsRDD[14] at map at <console>:25), which has no missing parents
+18/07/23 08:13:43 INFO MemoryStore: Block broadcast_11 stored as values in memory (estimated size 3.5 KB, free 365.3 MB)
+18/07/23 08:13:43 INFO MemoryStore: Block broadcast_11_piece0 stored as bytes in memory (estimated size 2.1 KB, free 365.3 MB)
+18/07/23 08:13:43 INFO BlockManagerInfo: Added broadcast_11_piece0 in memory on 192.168.1.105:41787 (size: 2.1 KB, free: 366.2 MB)
+18/07/23 08:13:43 INFO SparkContext: Created broadcast 11 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:13:43 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 9 (MapPartitionsRDD[14] at map at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:13:43 INFO YarnScheduler: Adding task set 9.0 with 1 tasks
+18/07/23 08:13:43 INFO TaskSetManager: Starting task 0.0 in stage 9.0 (TID 9, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7920 bytes)
+18/07/23 08:13:43 INFO BlockManagerInfo: Added broadcast_11_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.1 KB, free: 93.2 MB)
+18/07/23 08:13:43 INFO BlockManagerInfo: Added broadcast_9_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 23.3 KB, free: 93.2 MB)
+18/07/23 08:13:43 INFO TaskSetManager: Finished task 0.0 in stage 9.0 (TID 9) in 75 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:13:43 INFO YarnScheduler: Removed TaskSet 9.0, whose tasks have all completed, from pool 
+18/07/23 08:13:43 INFO DAGScheduler: ResultStage 9 (take at <console>:26) finished in 0.175 s
+18/07/23 08:13:43 INFO DAGScheduler: Job 5 finished: take at <console>:26, took 0.177252 s
+()
+()
+()
+()
+()
+()
+()
+()
+()
+()
+
+scala> orderItemsMap.take(10).foreval orderItemsMap = orderItems.map(orderItem => {ach(println)
+     | }
+     | )
+<console>:31: error: value foreval is not a member of Array[Unit]
+val $ires6 = orderItemsMap.take(10).foreval.orderItemsMap
+                                    ^
+<console>:27: error: value foreval is not a member of Array[Unit]
+       orderItemsMap.take(10).foreval orderItemsMap = orderItems.map(orderItem => {ach(println)
+                              ^
+
+scala> 
+
+scala> val orderItemsMap = orderItems.map(orderItem => {
+     | val oi = orderItem.split(",")
+     | (oi(1).toInt, orderItem)
+     | })
+orderItemsMap: org.apache.spark.rdd.RDD[(Int, String)] = MapPartitionsRDD[15] at map at <console>:25
+
+scala> orderItemsMap.take(10).foreach(println)
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 168
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 152
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 198
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 183
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 194
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 155
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 169
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 190
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 177
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 180
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 199
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 193
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 156
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 160
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 151
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 182
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 157
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 186
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 196
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 162
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 165
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 178
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 181
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 163
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 195
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 197
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 166
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 189
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 187
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 172
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 191
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 161
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 167
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 159
+18/07/23 08:14:37 INFO BlockManagerInfo: Removed broadcast_11_piece0 on 192.168.1.105:41787 in memory (size: 2.1 KB, free: 366.2 MB)
+18/07/23 08:14:37 INFO BlockManagerInfo: Removed broadcast_11_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.1 KB, free: 93.2 MB)
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 179
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 185
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 158
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 175
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 171
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 176
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 154
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 173
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 170
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 184
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 150
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 192
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 174
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 188
+18/07/23 08:14:37 INFO BlockManagerInfo: Removed broadcast_10_piece0 on 192.168.1.105:41787 in memory (size: 2.0 KB, free: 366.2 MB)
+18/07/23 08:14:37 INFO BlockManagerInfo: Removed broadcast_10_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.0 KB, free: 93.2 MB)
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 153
+18/07/23 08:14:37 INFO ContextCleaner: Cleaned accumulator 164
+18/07/23 08:14:38 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 08:14:38 INFO DAGScheduler: Got job 6 (take at <console>:26) with 1 output partitions
+18/07/23 08:14:38 INFO DAGScheduler: Final stage: ResultStage 10 (take at <console>:26)
+18/07/23 08:14:38 INFO DAGScheduler: Parents of final stage: List()
+18/07/23 08:14:38 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:14:38 INFO DAGScheduler: Submitting ResultStage 10 (MapPartitionsRDD[15] at map at <console>:25), which has no missing parents
+18/07/23 08:14:38 INFO MemoryStore: Block broadcast_12 stored as values in memory (estimated size 3.4 KB, free 365.3 MB)
+18/07/23 08:14:38 INFO MemoryStore: Block broadcast_12_piece0 stored as bytes in memory (estimated size 2.0 KB, free 365.3 MB)
+18/07/23 08:14:38 INFO BlockManagerInfo: Added broadcast_12_piece0 in memory on 192.168.1.105:41787 (size: 2.0 KB, free: 366.2 MB)
+18/07/23 08:14:38 INFO SparkContext: Created broadcast 12 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:14:38 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 10 (MapPartitionsRDD[15] at map at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:14:38 INFO YarnScheduler: Adding task set 10.0 with 1 tasks
+18/07/23 08:14:38 INFO TaskSetManager: Starting task 0.0 in stage 10.0 (TID 10, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7920 bytes)
+18/07/23 08:14:38 INFO BlockManagerInfo: Added broadcast_12_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.0 KB, free: 93.2 MB)
+18/07/23 08:14:38 INFO TaskSetManager: Finished task 0.0 in stage 10.0 (TID 10) in 25 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:14:38 INFO YarnScheduler: Removed TaskSet 10.0, whose tasks have all completed, from pool 
+18/07/23 08:14:38 INFO DAGScheduler: ResultStage 10 (take at <console>:26) finished in 0.127 s
+18/07/23 08:14:38 INFO DAGScheduler: Job 6 finished: take at <console>:26, took 0.128404 s
+(1,1,1,957,1,299.98,299.98)
+(2,2,2,1073,1,199.99,199.99)
+(2,3,2,502,5,250.0,50.0)
+(2,4,2,403,1,129.99,129.99)
+(4,5,4,897,2,49.98,24.99)
+(4,6,4,365,5,299.95,59.99)
+(4,7,4,502,3,150.0,50.0)
+(4,8,4,1014,4,199.92,49.98)
+(5,9,5,957,1,299.98,299.98)
+(5,10,5,365,5,299.95,59.99)
+
+scala> val ordersLeftOuterJoin = ordersMap.leftOuterJoin(orderItemsMap)
+ordersLeftOuterJoin: org.apache.spark.rdd.RDD[(Int, (String, Option[String]))] = MapPartitionsRDD[18] at leftOuterJoin at <console>:27
+
+scala> ordersLeftOuterJoin.ta18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 213
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 221
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 202
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 203
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 208
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 210
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 219
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 223
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 211
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 212
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 216
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 224
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 204
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 201
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 214
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 209
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 206
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 205
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 222
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 218
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 217
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 207
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 220
+18/07/23 08:14:52 INFO BlockManagerInfo: Removed broadcast_12_piece0 on 192.168.1.105:41787 in memory (size: 2.0 KB, free: 366.2 MB)
+18/07/23 08:14:52 INFO BlockManagerInfo: Removed broadcast_12_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.0 KB, free: 93.2 MB)
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 215
+18/07/23 08:14:52 INFO ContextCleaner: Cleaned accumulator 200
+                           take
+take   takeAsync   takeOrdered   takeSample
+
+scala> ordersLeftOuterJoin.take(100).foreach(println)
+18/07/23 08:15:03 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 08:15:03 INFO DAGScheduler: Registering RDD 13 (map at <console>:25)
+18/07/23 08:15:03 INFO DAGScheduler: Registering RDD 15 (map at <console>:25)
+18/07/23 08:15:03 INFO DAGScheduler: Got job 7 (take at <console>:26) with 1 output partitions
+18/07/23 08:15:03 INFO DAGScheduler: Final stage: ResultStage 13 (take at <console>:26)
+18/07/23 08:15:03 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 12, ShuffleMapStage 11)
+18/07/23 08:15:03 INFO DAGScheduler: Missing parents: List(ShuffleMapStage 12, ShuffleMapStage 11)
+18/07/23 08:15:03 INFO DAGScheduler: Submitting ShuffleMapStage 11 (MapPartitionsRDD[13] at map at <console>:25), which has no missing parents
+18/07/23 08:15:03 INFO MemoryStore: Block broadcast_13 stored as values in memory (estimated size 4.0 KB, free 365.3 MB)
+18/07/23 08:15:03 INFO MemoryStore: Block broadcast_13_piece0 stored as bytes in memory (estimated size 2.4 KB, free 365.3 MB)
+18/07/23 08:15:03 INFO BlockManagerInfo: Added broadcast_13_piece0 in memory on 192.168.1.105:41787 (size: 2.4 KB, free: 366.2 MB)
+18/07/23 08:15:03 INFO SparkContext: Created broadcast 13 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:15:03 INFO DAGScheduler: Submitting 2 missing tasks from ShuffleMapStage 11 (MapPartitionsRDD[13] at map at <console>:25) (first 15 tasks are for partitions Vector(0, 1))
+18/07/23 08:15:03 INFO YarnScheduler: Adding task set 11.0 with 2 tasks
+18/07/23 08:15:03 INFO DAGScheduler: Submitting ShuffleMapStage 12 (MapPartitionsRDD[15] at map at <console>:25), which has no missing parents
+18/07/23 08:15:03 INFO TaskSetManager: Starting task 0.0 in stage 11.0 (TID 11, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7904 bytes)
+18/07/23 08:15:03 INFO MemoryStore: Block broadcast_14 stored as values in memory (estimated size 4.0 KB, free 365.3 MB)
+18/07/23 08:15:03 INFO MemoryStore: Block broadcast_14_piece0 stored as bytes in memory (estimated size 2.4 KB, free 365.3 MB)
+18/07/23 08:15:03 INFO BlockManagerInfo: Added broadcast_14_piece0 in memory on 192.168.1.105:41787 (size: 2.4 KB, free: 366.2 MB)
+18/07/23 08:15:03 INFO SparkContext: Created broadcast 14 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:15:03 INFO DAGScheduler: Submitting 2 missing tasks from ShuffleMapStage 12 (MapPartitionsRDD[15] at map at <console>:25) (first 15 tasks are for partitions Vector(0, 1))
+18/07/23 08:15:03 INFO YarnScheduler: Adding task set 12.0 with 2 tasks
+18/07/23 08:15:03 INFO BlockManagerInfo: Added broadcast_13_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.4 KB, free: 93.2 MB)
+18/07/23 08:15:03 INFO TaskSetManager: Starting task 1.0 in stage 11.0 (TID 12, raj-Lenovo-Y50-70, executor 1, partition 1, NODE_LOCAL, 7904 bytes)
+18/07/23 08:15:04 INFO TaskSetManager: Finished task 0.0 in stage 11.0 (TID 11) in 89 ms on raj-Lenovo-Y50-70 (executor 1) (1/2)
+18/07/23 08:15:04 INFO TaskSetManager: Starting task 0.0 in stage 12.0 (TID 13, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7909 bytes)
+18/07/23 08:15:04 INFO TaskSetManager: Finished task 1.0 in stage 11.0 (TID 12) in 66 ms on raj-Lenovo-Y50-70 (executor 1) (2/2)
+18/07/23 08:15:04 INFO YarnScheduler: Removed TaskSet 11.0, whose tasks have all completed, from pool 
+18/07/23 08:15:04 INFO DAGScheduler: ShuffleMapStage 11 (map at <console>:25) finished in 0.260 s
+18/07/23 08:15:04 INFO DAGScheduler: looking for newly runnable stages
+18/07/23 08:15:04 INFO DAGScheduler: running: Set(ShuffleMapStage 12)
+18/07/23 08:15:04 INFO DAGScheduler: waiting: Set(ResultStage 13)
+18/07/23 08:15:04 INFO DAGScheduler: failed: Set()
+18/07/23 08:15:04 INFO BlockManagerInfo: Added broadcast_14_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.4 KB, free: 93.2 MB)
+18/07/23 08:15:04 INFO TaskSetManager: Starting task 1.0 in stage 12.0 (TID 14, raj-Lenovo-Y50-70, executor 1, partition 1, NODE_LOCAL, 7909 bytes)
+18/07/23 08:15:04 INFO TaskSetManager: Finished task 0.0 in stage 12.0 (TID 13) in 134 ms on raj-Lenovo-Y50-70 (executor 1) (1/2)
+18/07/23 08:15:04 INFO TaskSetManager: Finished task 1.0 in stage 12.0 (TID 14) in 116 ms on raj-Lenovo-Y50-70 (executor 1) (2/2)
+18/07/23 08:15:04 INFO YarnScheduler: Removed TaskSet 12.0, whose tasks have all completed, from pool 
+18/07/23 08:15:04 INFO DAGScheduler: ShuffleMapStage 12 (map at <console>:25) finished in 0.403 s
+18/07/23 08:15:04 INFO DAGScheduler: looking for newly runnable stages
+18/07/23 08:15:04 INFO DAGScheduler: running: Set()
+18/07/23 08:15:04 INFO DAGScheduler: waiting: Set(ResultStage 13)
+18/07/23 08:15:04 INFO DAGScheduler: failed: Set()
+18/07/23 08:15:04 INFO DAGScheduler: Submitting ResultStage 13 (MapPartitionsRDD[18] at leftOuterJoin at <console>:27), which has no missing parents
+18/07/23 08:15:04 INFO MemoryStore: Block broadcast_15 stored as values in memory (estimated size 3.3 KB, free 365.3 MB)
+18/07/23 08:15:04 INFO MemoryStore: Block broadcast_15_piece0 stored as bytes in memory (estimated size 1954.0 B, free 365.3 MB)
+18/07/23 08:15:04 INFO BlockManagerInfo: Added broadcast_15_piece0 in memory on 192.168.1.105:41787 (size: 1954.0 B, free: 366.2 MB)
+18/07/23 08:15:04 INFO SparkContext: Created broadcast 15 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:15:04 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 13 (MapPartitionsRDD[18] at leftOuterJoin at <console>:27) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:15:04 INFO YarnScheduler: Adding task set 13.0 with 1 tasks
+18/07/23 08:15:04 INFO TaskSetManager: Starting task 0.0 in stage 13.0 (TID 15, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:15:04 INFO BlockManagerInfo: Added broadcast_15_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 1954.0 B, free: 93.2 MB)
+18/07/23 08:15:04 INFO MapOutputTrackerMasterEndpoint: Asked to send map output locations for shuffle 2 to 192.168.1.105:60700
+18/07/23 08:15:04 INFO MapOutputTrackerMasterEndpoint: Asked to send map output locations for shuffle 3 to 192.168.1.105:60700
+18/07/23 08:15:04 INFO TaskSetManager: Finished task 0.0 in stage 13.0 (TID 15) in 194 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:15:04 INFO YarnScheduler: Removed TaskSet 13.0, whose tasks have all completed, from pool 
+18/07/23 08:15:04 INFO DAGScheduler: ResultStage 13 (take at <console>:26) finished in 0.199 s
+18/07/23 08:15:04 INFO DAGScheduler: Job 7 finished: take at <console>:26, took 0.709230 s
+(41234,(41234,2014-04-04 00:00:00.0,3182,PENDING_PAYMENT,Some(102921,41234,249,2,109.94,54.97)))
+(65722,(65722,2014-05-23 00:00:00.0,4077,COMPLETE,Some(164249,65722,365,2,119.98,59.99)))
+(65722,(65722,2014-05-23 00:00:00.0,4077,COMPLETE,Some(164250,65722,730,5,400.0,80.0)))
+(65722,(65722,2014-05-23 00:00:00.0,4077,COMPLETE,Some(164251,65722,1004,1,399.98,399.98)))
+(65722,(65722,2014-05-23 00:00:00.0,4077,COMPLETE,Some(164252,65722,627,5,199.95,39.99)))
+(65722,(65722,2014-05-23 00:00:00.0,4077,COMPLETE,Some(164253,65722,191,2,199.98,99.99)))
+(28730,(28730,2014-01-18 00:00:00.0,6069,PENDING_PAYMENT,Some(71921,28730,365,5,299.95,59.99)))
+(28730,(28730,2014-01-18 00:00:00.0,6069,PENDING_PAYMENT,Some(71922,28730,502,1,50.0,50.0)))
+(68522,(68522,2014-06-05 00:00:00.0,880,SUSPECTED_FRAUD,Some(171323,68522,127,1,329.99,329.99)))
+(23776,(23776,2013-12-20 00:00:00.0,4041,COMPLETE,Some(59498,23776,1073,1,199.99,199.99)))
+(23776,(23776,2013-12-20 00:00:00.0,4041,COMPLETE,Some(59499,23776,403,1,129.99,129.99)))
+(5354,(5354,2013-08-26 00:00:00.0,7616,PENDING_PAYMENT,None))
+(32676,(32676,2014-02-11 00:00:00.0,12194,PROCESSING,Some(81749,32676,365,1,59.99,59.99)))
+(32676,(32676,2014-02-11 00:00:00.0,12194,PROCESSING,Some(81750,32676,627,4,159.96,39.99)))
+(32676,(32676,2014-02-11 00:00:00.0,12194,PROCESSING,Some(81751,32676,191,3,299.97,99.99)))
+(32676,(32676,2014-02-11 00:00:00.0,12194,PROCESSING,Some(81752,32676,1073,1,199.99,199.99)))
+(4926,(4926,2013-08-24 00:00:00.0,8498,PROCESSING,Some(12324,4926,1014,4,199.92,49.98)))
+(4926,(4926,2013-08-24 00:00:00.0,8498,PROCESSING,Some(12325,4926,1073,1,199.99,199.99)))
+(4926,(4926,2013-08-24 00:00:00.0,8498,PROCESSING,Some(12326,4926,365,4,239.96,59.99)))
+(4926,(4926,2013-08-24 00:00:00.0,8498,PROCESSING,Some(12327,4926,957,1,299.98,299.98)))
+(38926,(38926,2014-03-22 00:00:00.0,8245,PROCESSING,Some(97183,38926,191,5,499.95,99.99)))
+(38926,(38926,2014-03-22 00:00:00.0,8245,PROCESSING,Some(97184,38926,502,5,250.0,50.0)))
+(38926,(38926,2014-03-22 00:00:00.0,8245,PROCESSING,Some(97185,38926,365,5,299.95,59.99)))
+(29270,(29270,2014-01-21 00:00:00.0,6187,PROCESSING,Some(73214,29270,365,5,299.95,59.99)))
+(29270,(29270,2014-01-21 00:00:00.0,6187,PROCESSING,Some(73215,29270,365,2,119.98,59.99)))
+(29270,(29270,2014-01-21 00:00:00.0,6187,PROCESSING,Some(73216,29270,1004,1,399.98,399.98)))
+(29270,(29270,2014-01-21 00:00:00.0,6187,PROCESSING,Some(73217,29270,627,4,159.96,39.99)))
+(29270,(29270,2014-01-21 00:00:00.0,6187,PROCESSING,Some(73218,29270,1004,1,399.98,399.98)))
+(40888,(40888,2014-04-02 00:00:00.0,4528,CLOSED,None))
+(51620,(51620,2014-06-13 00:00:00.0,2146,CLOSED,Some(128993,51620,1004,1,399.98,399.98)))
+(51620,(51620,2014-06-13 00:00:00.0,2146,CLOSED,Some(128994,51620,627,5,199.95,39.99)))
+(51620,(51620,2014-06-13 00:00:00.0,2146,CLOSED,Some(128995,51620,1014,2,99.96,49.98)))
+(51620,(51620,2014-06-13 00:00:00.0,2146,CLOSED,Some(128996,51620,502,4,200.0,50.0)))
+(51620,(51620,2014-06-13 00:00:00.0,2146,CLOSED,Some(128997,51620,1014,2,99.96,49.98)))
+(63852,(63852,2014-03-15 00:00:00.0,3490,SUSPECTED_FRAUD,Some(159613,63852,1073,1,199.99,199.99)))
+(63852,(63852,2014-03-15 00:00:00.0,3490,SUSPECTED_FRAUD,Some(159614,63852,627,2,79.98,39.99)))
+(63852,(63852,2014-03-15 00:00:00.0,3490,SUSPECTED_FRAUD,Some(159615,63852,1073,1,199.99,199.99)))
+(11852,(11852,2013-10-05 00:00:00.0,12192,SUSPECTED_FRAUD,Some(29630,11852,403,1,129.99,129.99)))
+(11852,(11852,2013-10-05 00:00:00.0,12192,SUSPECTED_FRAUD,Some(29631,11852,1004,1,399.98,399.98)))
+(11852,(11852,2013-10-05 00:00:00.0,12192,SUSPECTED_FRAUD,Some(29632,11852,804,1,19.99,19.99)))
+(11852,(11852,2013-10-05 00:00:00.0,12192,SUSPECTED_FRAUD,Some(29633,11852,502,2,100.0,50.0)))
+(49508,(49508,2014-05-29 00:00:00.0,6169,PENDING_PAYMENT,Some(123738,49508,627,4,159.96,39.99)))
+(49508,(49508,2014-05-29 00:00:00.0,6169,PENDING_PAYMENT,Some(123739,49508,1014,5,249.9,49.98)))
+(55194,(55194,2014-07-09 00:00:00.0,7868,COMPLETE,Some(138033,55194,365,1,59.99,59.99)))
+(55194,(55194,2014-07-09 00:00:00.0,7868,COMPLETE,Some(138034,55194,191,3,299.97,99.99)))
+(55194,(55194,2014-07-09 00:00:00.0,7868,COMPLETE,Some(138035,55194,1073,1,199.99,199.99)))
+(55194,(55194,2014-07-09 00:00:00.0,7868,COMPLETE,Some(138036,55194,1073,1,199.99,199.99)))
+(8390,(8390,2013-09-15 00:00:00.0,11288,PENDING_PAYMENT,Some(20952,8390,403,1,129.99,129.99)))
+(8390,(8390,2013-09-15 00:00:00.0,11288,PENDING_PAYMENT,Some(20953,8390,502,1,50.0,50.0)))
+(53926,(53926,2014-06-30 00:00:00.0,7003,COMPLETE,Some(134834,53926,365,2,119.98,59.99)))
+(53926,(53926,2014-06-30 00:00:00.0,7003,COMPLETE,Some(134835,53926,191,1,99.99,99.99)))
+(62490,(62490,2014-01-22 00:00:00.0,8942,ON_HOLD,None))
+(63508,(63508,2014-02-28 00:00:00.0,1607,COMPLETE,None))
+(4992,(4992,2013-08-24 00:00:00.0,10318,CLOSED,Some(12499,4992,502,3,150.0,50.0)))
+(4992,(4992,2013-08-24 00:00:00.0,10318,CLOSED,Some(12500,4992,1004,1,399.98,399.98)))
+(4992,(4992,2013-08-24 00:00:00.0,10318,CLOSED,Some(12501,4992,1014,5,249.9,49.98)))
+(4992,(4992,2013-08-24 00:00:00.0,10318,CLOSED,Some(12502,4992,365,3,179.97,59.99)))
+(20894,(20894,2013-11-30 00:00:00.0,528,CLOSED,Some(52197,20894,957,1,299.98,299.98)))
+(20894,(20894,2013-11-30 00:00:00.0,528,CLOSED,Some(52198,20894,957,1,299.98,299.98)))
+(20894,(20894,2013-11-30 00:00:00.0,528,CLOSED,Some(52199,20894,403,1,129.99,129.99)))
+(20894,(20894,2013-11-30 00:00:00.0,528,CLOSED,Some(52200,20894,1014,2,99.96,49.98)))
+(20894,(20894,2013-11-30 00:00:00.0,528,CLOSED,Some(52201,20894,627,1,39.99,39.99)))
+(21780,(21780,2013-12-06 00:00:00.0,5077,PROCESSING,Some(54481,21780,403,1,129.99,129.99)))
+(21780,(21780,2013-12-06 00:00:00.0,5077,PROCESSING,Some(54482,21780,957,1,299.98,299.98)))
+(21780,(21780,2013-12-06 00:00:00.0,5077,PROCESSING,Some(54483,21780,365,1,59.99,59.99)))
+(66368,(66368,2014-06-17 00:00:00.0,10524,CLOSED,Some(165909,66368,403,1,129.99,129.99)))
+(66368,(66368,2014-06-17 00:00:00.0,10524,CLOSED,Some(165910,66368,306,4,359.96,89.99)))
+(61462,(61462,2013-12-14 00:00:00.0,5128,PROCESSING,Some(153715,61462,502,5,250.0,50.0)))
+(61462,(61462,2013-12-14 00:00:00.0,5128,PROCESSING,Some(153716,61462,403,1,129.99,129.99)))
+(30114,(30114,2014-01-28 00:00:00.0,5660,COMPLETE,Some(75280,30114,403,1,129.99,129.99)))
+(30114,(30114,2014-01-28 00:00:00.0,5660,COMPLETE,Some(75281,30114,1073,1,199.99,199.99)))
+(14554,(14554,2013-10-24 00:00:00.0,172,CANCELED,Some(36409,14554,365,3,179.97,59.99)))
+(14554,(14554,2013-10-24 00:00:00.0,172,CANCELED,Some(36410,14554,502,1,50.0,50.0)))
+(14554,(14554,2013-10-24 00:00:00.0,172,CANCELED,Some(36411,14554,403,1,129.99,129.99)))
+(14554,(14554,2013-10-24 00:00:00.0,172,CANCELED,Some(36412,14554,797,4,71.96,17.99)))
+(14554,(14554,2013-10-24 00:00:00.0,172,CANCELED,Some(36413,14554,627,2,79.98,39.99)))
+(1780,(1780,2013-08-03 00:00:00.0,11189,PROCESSING,Some(4439,1780,365,1,59.99,59.99)))
+(1780,(1780,2013-08-03 00:00:00.0,11189,PROCESSING,Some(4440,1780,627,1,39.99,39.99)))
+(1780,(1780,2013-08-03 00:00:00.0,11189,PROCESSING,Some(4441,1780,403,1,129.99,129.99)))
+(1780,(1780,2013-08-03 00:00:00.0,11189,PROCESSING,Some(4442,1780,1073,1,199.99,199.99)))
+(1780,(1780,2013-08-03 00:00:00.0,11189,PROCESSING,Some(4443,1780,403,1,129.99,129.99)))
+(16132,(16132,2013-11-04 00:00:00.0,1257,COMPLETE,Some(40279,16132,365,2,119.98,59.99)))
+(61948,(61948,2014-01-03 00:00:00.0,11875,COMPLETE,Some(154875,61948,1073,1,199.99,199.99)))
+(61948,(61948,2014-01-03 00:00:00.0,11875,COMPLETE,Some(154876,61948,1073,1,199.99,199.99)))
+(61948,(61948,2014-01-03 00:00:00.0,11875,COMPLETE,Some(154877,61948,1073,1,199.99,199.99)))
+(37370,(37370,2014-03-12 00:00:00.0,10541,COMPLETE,None))
+(9336,(9336,2013-09-22 00:00:00.0,11662,COMPLETE,Some(23297,9336,627,1,39.99,39.99)))
+(18872,(18872,2013-11-19 00:00:00.0,597,PENDING_PAYMENT,Some(47201,18872,365,5,299.95,59.99)))
+(18872,(18872,2013-11-19 00:00:00.0,597,PENDING_PAYMENT,Some(47202,18872,1014,5,249.9,49.98)))
+(18872,(18872,2013-11-19 00:00:00.0,597,PENDING_PAYMENT,Some(47203,18872,403,1,129.99,129.99)))
+(18872,(18872,2013-11-19 00:00:00.0,597,PENDING_PAYMENT,Some(47204,18872,1004,1,399.98,399.98)))
+(18872,(18872,2013-11-19 00:00:00.0,597,PENDING_PAYMENT,Some(47205,18872,703,2,39.98,19.99)))
+(53850,(53850,2014-06-29 00:00:00.0,884,PENDING,Some(134632,53850,1073,1,199.99,199.99)))
+(53850,(53850,2014-06-29 00:00:00.0,884,PENDING,Some(134633,53850,1073,1,199.99,199.99)))
+(53850,(53850,2014-06-29 00:00:00.0,884,PENDING,Some(134634,53850,191,2,199.98,99.99)))
+(53850,(53850,2014-06-29 00:00:00.0,884,PENDING,Some(134635,53850,572,2,79.98,39.99)))
+(12420,(12420,2013-10-09 00:00:00.0,449,PENDING,None))
+(24688,(24688,2013-12-25 00:00:00.0,12022,COMPLETE,Some(61825,24688,627,1,39.99,39.99)))
+(24688,(24688,2013-12-25 00:00:00.0,12022,COMPLETE,Some(61826,24688,1004,1,399.98,399.98)))
+(24688,(24688,2013-12-25 00:00:00.0,12022,COMPLETE,Some(61827,24688,957,1,299.98,299.98)))
+
+scala> //If record is there,you will get Some else you will get None
+
+scala> val tuple = ordersLeftOuterJoin.first
+18/07/23 08:17:56 INFO SparkContext: Starting job: first at <console>:25
+18/07/23 08:17:56 INFO DAGScheduler: Got job 8 (first at <console>:25) with 1 output partitions
+18/07/23 08:17:56 INFO DAGScheduler: Final stage: ResultStage 16 (first at <console>:25)
+18/07/23 08:17:56 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 15, ShuffleMapStage 14)
+18/07/23 08:17:56 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:17:56 INFO DAGScheduler: Submitting ResultStage 16 (MapPartitionsRDD[18] at leftOuterJoin at <console>:27), which has no missing parents
+18/07/23 08:17:56 INFO MemoryStore: Block broadcast_16 stored as values in memory (estimated size 3.3 KB, free 365.2 MB)
+18/07/23 08:17:56 INFO MemoryStore: Block broadcast_16_piece0 stored as bytes in memory (estimated size 1954.0 B, free 365.2 MB)
+18/07/23 08:17:56 INFO BlockManagerInfo: Added broadcast_16_piece0 in memory on 192.168.1.105:41787 (size: 1954.0 B, free: 366.2 MB)
+18/07/23 08:17:56 INFO SparkContext: Created broadcast 16 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:17:56 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 16 (MapPartitionsRDD[18] at leftOuterJoin at <console>:27) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:17:56 INFO YarnScheduler: Adding task set 16.0 with 1 tasks
+18/07/23 08:17:56 INFO TaskSetManager: Starting task 0.0 in stage 16.0 (TID 16, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:17:56 INFO BlockManagerInfo: Added broadcast_16_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 1954.0 B, free: 93.2 MB)
+18/07/23 08:17:56 INFO TaskSetManager: Finished task 0.0 in stage 16.0 (TID 16) in 209 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:17:56 INFO YarnScheduler: Removed TaskSet 16.0, whose tasks have all completed, from pool 
+18/07/23 08:17:56 INFO DAGScheduler: ResultStage 16 (first at <console>:25) finished in 0.213 s
+18/07/23 08:17:56 INFO DAGScheduler: Job 8 finished: first at <console>:25, took 0.215624 s
+tuple: (Int, (String, Option[String])) = (41234,(41234,2014-04-04 00:00:00.0,3182,PENDING_PAYMENT,Some(102921,41234,249,2,109.94,54.97)))
+
+scala> tuple._1
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 247
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 308
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 270
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 236
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 231
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 301
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 319
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 235
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 274
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 284
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 310
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 245
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 232
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 277
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 252
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 311
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 302
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 272
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 242
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 314
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 268
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 267
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 306
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 271
+18/07/23 08:18:00 INFO BlockManagerInfo: Removed broadcast_16_piece0 on 192.168.1.105:41787 in memory (size: 1954.0 B, free: 366.2 MB)
+18/07/23 08:18:00 INFO BlockManagerInfo: Removed broadcast_16_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 1954.0 B, free: 93.2 MB)
+res10: Int = 41234
+
+scala> 18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 294
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 226
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 261
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 239
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 256
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 290
+18/07/23 08:18:00 INFO BlockManagerInfo: Removed broadcast_13_piece0 on 192.168.1.105:41787 in memory (size: 2.4 KB, free: 366.2 MB)
+18/07/23 08:18:00 INFO BlockManagerInfo: Removed broadcast_13_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.4 KB, free: 93.2 MB)
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 225
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 299
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 253
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 259
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 276
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 230
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 255
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 283
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 322
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 292
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 298
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 305
+18/07/23 08:18:00 INFO BlockManagerInfo: Removed broadcast_15_piece0 on 192.168.1.105:41787 in memory (size: 1954.0 B, free: 366.2 MB)
+18/07/23 08:18:00 INFO BlockManagerInfo: Removed broadcast_15_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 1954.0 B, free: 93.2 MB)
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 297
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 228
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 234
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 246
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 324
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 303
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 316
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 262
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 269
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 285
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 233
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 279
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 321
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 266
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 250
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 273
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 265
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 227
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 258
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 251
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 318
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 287
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 286
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 257
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 229
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 243
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 260
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 280
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 291
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 307
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 323
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 263
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 264
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 278
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 309
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 249
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 304
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 289
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 296
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 238
+18/07/23 08:18:00 INFO BlockManagerInfo: Removed broadcast_14_piece0 on 192.168.1.105:41787 in memory (size: 2.4 KB, free: 366.2 MB)
+18/07/23 08:18:00 INFO BlockManagerInfo: Removed broadcast_14_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.4 KB, free: 93.2 MB)
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 248
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 281
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 244
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 300
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 254
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 315
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 237
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 317
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 241
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 295
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 313
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 288
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 320
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 240
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 275
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 312
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 282
+18/07/23 08:18:00 INFO ContextCleaner: Cleaned accumulator 293
+
+
+scala> tuple._2
+res11: (String, Option[String]) = (41234,2014-04-04 00:00:00.0,3182,PENDING_PAYMENT,Some(102921,41234,249,2,109.94,54.97))
+
+scala> tuple
+res12: (Int, (String, Option[String])) = (41234,(41234,2014-04-04 00:00:00.0,3182,PENDING_PAYMENT,Some(102921,41234,249,2,109.94,54.97)))
+
+scala> tuple._1
+res13: Int = 41234
+
+scala> tuple._2
+res14: (String, Option[String]) = (41234,2014-04-04 00:00:00.0,3182,PENDING_PAYMENT,Some(102921,41234,249,2,109.94,54.97))
+
+scala> tuple._3
+<console>:26: error: value _3 is not a member of (Int, (String, Option[String]))
+       tuple._3
+             ^
+
+scala> tuple._2._1
+res16: String = 41234,2014-04-04 00:00:00.0,3182,PENDING_PAYMENT
+
+scala> tuple._2._2
+res17: Option[String] = Some(102921,41234,249,2,109.94,54.97)
+
+scala> tuple._2._2 == None
+res18: Boolean = false
+
+scala> val ordersLeftOuterJoinFilter = ordersLeftOuterJoin.filter(order => order._2._2 == None)
+ordersLeftOuterJoinFilter: org.apache.spark.rdd.RDD[(Int, (String, Option[String]))] = MapPartitionsRDD[19] at filter at <console>:25
+
+scala> ordersLeftOuterJoinFilter.take(10).foreach(println)
+18/07/23 08:20:27 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 08:20:27 INFO DAGScheduler: Got job 9 (take at <console>:26) with 1 output partitions
+18/07/23 08:20:27 INFO DAGScheduler: Final stage: ResultStage 19 (take at <console>:26)
+18/07/23 08:20:27 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 17, ShuffleMapStage 18)
+18/07/23 08:20:27 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:20:27 INFO DAGScheduler: Submitting ResultStage 19 (MapPartitionsRDD[19] at filter at <console>:25), which has no missing parents
+18/07/23 08:20:27 INFO MemoryStore: Block broadcast_17 stored as values in memory (estimated size 3.5 KB, free 365.3 MB)
+18/07/23 08:20:27 INFO MemoryStore: Block broadcast_17_piece0 stored as bytes in memory (estimated size 2.0 KB, free 365.3 MB)
+18/07/23 08:20:27 INFO BlockManagerInfo: Added broadcast_17_piece0 in memory on 192.168.1.105:41787 (size: 2.0 KB, free: 366.2 MB)
+18/07/23 08:20:27 INFO SparkContext: Created broadcast 17 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:20:27 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 19 (MapPartitionsRDD[19] at filter at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:20:27 INFO YarnScheduler: Adding task set 19.0 with 1 tasks
+18/07/23 08:20:27 INFO TaskSetManager: Starting task 0.0 in stage 19.0 (TID 17, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:20:27 INFO BlockManagerInfo: Added broadcast_17_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.0 KB, free: 93.2 MB)
+18/07/23 08:20:27 INFO TaskSetManager: Finished task 0.0 in stage 19.0 (TID 17) in 190 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:20:27 INFO YarnScheduler: Removed TaskSet 19.0, whose tasks have all completed, from pool 
+18/07/23 08:20:27 INFO DAGScheduler: ResultStage 19 (take at <console>:26) finished in 0.194 s
+18/07/23 08:20:27 INFO DAGScheduler: Job 9 finished: take at <console>:26, took 0.196160 s
+(5354,(5354,2013-08-26 00:00:00.0,7616,PENDING_PAYMENT,None))
+(40888,(40888,2014-04-02 00:00:00.0,4528,CLOSED,None))
+(62490,(62490,2014-01-22 00:00:00.0,8942,ON_HOLD,None))
+(63508,(63508,2014-02-28 00:00:00.0,1607,COMPLETE,None))
+(37370,(37370,2014-03-12 00:00:00.0,10541,COMPLETE,None))
+(12420,(12420,2013-10-09 00:00:00.0,449,PENDING,None))
+(1732,(1732,2013-08-03 00:00:00.0,2851,PENDING_PAYMENT,None))
+(1550,(1550,2013-08-02 00:00:00.0,3043,PENDING_PAYMENT,None))
+(2938,(2938,2013-08-10 00:00:00.0,116,COMPLETE,None))
+(21834,(21834,2013-12-06 00:00:00.0,12334,COMPLETE,None))
+
+scala> val ordersLeftOuterJoinFilter = ordersLeftOuterJoin.filter(_._2._2 == None)
+ordersLeftOuterJoinFilter: org.apache.spark.rdd.RDD[(Int, (String, Option[String]))] = MapPartitionsRDD[20] at filter at <console>:25
+
+scala> ordersLeftOuterJoinFilter.take(10).foreach(println)
+18/07/23 08:20:38 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 08:20:38 INFO DAGScheduler: Got job 10 (take at <console>:26) with 1 output partitions
+18/07/23 08:20:38 INFO DAGScheduler: Final stage: ResultStage 22 (take at <console>:26)
+18/07/23 08:20:38 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 20, ShuffleMapStage 21)
+18/07/23 08:20:38 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:20:38 INFO DAGScheduler: Submitting ResultStage 22 (MapPartitionsRDD[20] at filter at <console>:25), which has no missing parents
+18/07/23 08:20:38 INFO MemoryStore: Block broadcast_18 stored as values in memory (estimated size 3.5 KB, free 365.3 MB)
+18/07/23 08:20:38 INFO MemoryStore: Block broadcast_18_piece0 stored as bytes in memory (estimated size 2.0 KB, free 365.3 MB)
+18/07/23 08:20:38 INFO BlockManagerInfo: Added broadcast_18_piece0 in memory on 192.168.1.105:41787 (size: 2.0 KB, free: 366.2 MB)
+18/07/23 08:20:38 INFO SparkContext: Created broadcast 18 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:20:38 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 22 (MapPartitionsRDD[20] at filter at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:20:38 INFO YarnScheduler: Adding task set 22.0 with 1 tasks
+18/07/23 08:20:38 INFO TaskSetManager: Starting task 0.0 in stage 22.0 (TID 18, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:20:38 INFO BlockManagerInfo: Added broadcast_18_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.0 KB, free: 93.2 MB)
+18/07/23 08:20:38 INFO TaskSetManager: Finished task 0.0 in stage 22.0 (TID 18) in 182 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:20:38 INFO YarnScheduler: Removed TaskSet 22.0, whose tasks have all completed, from pool 
+18/07/23 08:20:38 INFO DAGScheduler: ResultStage 22 (take at <console>:26) finished in 0.187 s
+18/07/23 08:20:38 INFO DAGScheduler: Job 10 finished: take at <console>:26, took 0.189716 s
+(5354,(5354,2013-08-26 00:00:00.0,7616,PENDING_PAYMENT,None))
+(40888,(40888,2014-04-02 00:00:00.0,4528,CLOSED,None))
+(62490,(62490,2014-01-22 00:00:00.0,8942,ON_HOLD,None))
+(63508,(63508,2014-02-28 00:00:00.0,1607,COMPLETE,None))
+(37370,(37370,2014-03-12 00:00:00.0,10541,COMPLETE,None))
+(12420,(12420,2013-10-09 00:00:00.0,449,PENDING,None))
+(1732,(1732,2013-08-03 00:00:00.0,2851,PENDING_PAYMENT,None))
+(1550,(1550,2013-08-02 00:00:00.0,3043,PENDING_PAYMENT,None))
+(2938,(2938,2013-08-10 00:00:00.0,116,COMPLETE,None))
+(21834,(21834,2013-12-06 00:00:00.0,12334,COMPLETE,None))
+
+scala> ordersLeftOuterJoinFilter.count
+18/07/23 08:21:08 INFO SparkContext: Starting job: count at <console>:26
+18/07/23 08:21:08 INFO DAGScheduler: Got job 11 (count at <console>:26) with 2 output partitions
+18/07/23 08:21:08 INFO DAGScheduler: Final stage: ResultStage 25 (count at <console>:26)
+18/07/23 08:21:08 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 24, ShuffleMapStage 23)
+18/07/23 08:21:08 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:21:08 INFO DAGScheduler: Submitting ResultStage 25 (MapPartitionsRDD[20] at filter at <console>:25), which has no missing parents
+18/07/23 08:21:08 INFO MemoryStore: Block broadcast_19 stored as values in memory (estimated size 3.4 KB, free 365.3 MB)
+18/07/23 08:21:08 INFO MemoryStore: Block broadcast_19_piece0 stored as bytes in memory (estimated size 1974.0 B, free 365.3 MB)
+18/07/23 08:21:08 INFO BlockManagerInfo: Added broadcast_19_piece0 in memory on 192.168.1.105:41787 (size: 1974.0 B, free: 366.2 MB)
+18/07/23 08:21:08 INFO SparkContext: Created broadcast 19 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:21:08 INFO DAGScheduler: Submitting 2 missing tasks from ResultStage 25 (MapPartitionsRDD[20] at filter at <console>:25) (first 15 tasks are for partitions Vector(0, 1))
+18/07/23 08:21:08 INFO YarnScheduler: Adding task set 25.0 with 2 tasks
+18/07/23 08:21:08 INFO TaskSetManager: Starting task 0.0 in stage 25.0 (TID 19, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:21:08 INFO BlockManagerInfo: Added broadcast_19_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 1974.0 B, free: 93.2 MB)
+18/07/23 08:21:08 INFO TaskSetManager: Starting task 1.0 in stage 25.0 (TID 20, raj-Lenovo-Y50-70, executor 1, partition 1, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:21:08 INFO TaskSetManager: Finished task 0.0 in stage 25.0 (TID 19) in 223 ms on raj-Lenovo-Y50-70 (executor 1) (1/2)
+18/07/23 08:21:09 INFO TaskSetManager: Finished task 1.0 in stage 25.0 (TID 20) in 181 ms on raj-Lenovo-Y50-70 (executor 1) (2/2)
+18/07/23 08:21:09 INFO YarnScheduler: Removed TaskSet 25.0, whose tasks have all completed, from pool 
+18/07/23 08:21:09 INFO DAGScheduler: ResultStage 25 (count at <console>:26) finished in 0.408 s
+18/07/23 08:21:09 INFO DAGScheduler: Job 11 finished: count at <console>:26, took 0.409948 s
+res21: Long = 11452
+
+scala> So 11452 records doesnt have records in orderItems
+<console>:1: error: ';' expected but integer literal found.
+So 11452 records doesnt have records in orderItems
+   ^
+
+scala> // So 11452 order records doesnt have records in orderItems
+
+scala> val ordersWithNoOrderItem = ordersLeftOuterJoinFilter.map(order => order._2._1)
+ordersWithNoOrderItem: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[21] at map at <console>:25
+
+scala> ordersWit18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 391
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 378
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 337
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 326
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 387
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 388
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 349
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 390
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 396
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 399
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 358
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 342
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 338
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 354
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 344
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 386
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 352
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 372
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 375
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 347
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 380
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 374
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 381
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 325
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 385
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 368
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 333
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 373
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 350
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 377
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 335
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 351
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 343
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 348
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 332
+18/07/23 08:23:36 INFO ContextCleaner: Cleaned accumulator 341
+18/07/23 08:23:36 INFO BlockManagerInfo: Removed broadcast_19_piece0 on 192.168.1.105:41787 in memory (size: 1974.0 B, free: 366.2 MB)
+18/07/23 08:23:37 INFO BlockManagerInfo: Removed broadcast_19_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 1974.0 B, free: 93.2 MB)
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 357
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 393
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 329
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 367
+18/07/23 08:23:37 INFO BlockManagerInfo: Removed broadcast_18_piece0 on 192.168.1.105:41787 in memory (size: 2.0 KB, free: 366.2 MB)
+18/07/23 08:23:37 INFO BlockManagerInfo: Removed broadcast_18_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.0 KB, free: 93.2 MB)
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 383
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 359
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 364
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 346
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 363
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 369
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 376
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 330
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 336
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 389
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 392
+18/07/23 08:23:37 INFO BlockManagerInfo: Removed broadcast_17_piece0 on 192.168.1.105:41787 in memory (size: 2.0 KB, free: 366.2 MB)
+18/07/23 08:23:37 INFO BlockManagerInfo: Removed broadcast_17_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.0 KB, free: 93.2 MB)
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 365
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 361
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 394
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 371
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 328
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 331
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 327
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 340
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 353
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 355
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 360
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 379
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 356
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 362
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 397
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 384
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 366
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 370
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 339
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 345
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 395
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 398
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 334
+18/07/23 08:23:37 INFO ContextCleaner: Cleaned accumulator 382
+       ordersWithNoOrderItem.take(10).foreach(println)
+18/07/23 08:23:38 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 08:23:38 INFO DAGScheduler: Got job 12 (take at <console>:26) with 1 output partitions
+18/07/23 08:23:38 INFO DAGScheduler: Final stage: ResultStage 28 (take at <console>:26)
+18/07/23 08:23:38 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 27, ShuffleMapStage 26)
+18/07/23 08:23:38 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:23:38 INFO DAGScheduler: Submitting ResultStage 28 (MapPartitionsRDD[21] at map at <console>:25), which has no missing parents
+18/07/23 08:23:38 INFO MemoryStore: Block broadcast_20 stored as values in memory (estimated size 3.8 KB, free 365.3 MB)
+18/07/23 08:23:38 INFO MemoryStore: Block broadcast_20_piece0 stored as bytes in memory (estimated size 2.1 KB, free 365.3 MB)
+18/07/23 08:23:39 INFO BlockManagerInfo: Added broadcast_20_piece0 in memory on 192.168.1.105:41787 (size: 2.1 KB, free: 366.2 MB)
+18/07/23 08:23:39 INFO SparkContext: Created broadcast 20 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:23:39 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 28 (MapPartitionsRDD[21] at map at <console>:25) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:23:39 INFO YarnScheduler: Adding task set 28.0 with 1 tasks
+18/07/23 08:23:39 INFO TaskSetManager: Starting task 0.0 in stage 28.0 (TID 21, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:23:39 INFO BlockManagerInfo: Added broadcast_20_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.1 KB, free: 93.2 MB)
+18/07/23 08:23:39 INFO TaskSetManager: Finished task 0.0 in stage 28.0 (TID 21) in 177 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:23:39 INFO YarnScheduler: Removed TaskSet 28.0, whose tasks have all completed, from pool 
+18/07/23 08:23:39 INFO DAGScheduler: ResultStage 28 (take at <console>:26) finished in 0.244 s
+18/07/23 08:23:39 INFO DAGScheduler: Job 12 finished: take at <console>:26, took 0.246610 s
+5354,2013-08-26 00:00:00.0,7616,PENDING_PAYMENT
+40888,2014-04-02 00:00:00.0,4528,CLOSED
+62490,2014-01-22 00:00:00.0,8942,ON_HOLD
+63508,2014-02-28 00:00:00.0,1607,COMPLETE
+37370,2014-03-12 00:00:00.0,10541,COMPLETE
+12420,2013-10-09 00:00:00.0,449,PENDING
+1732,2013-08-03 00:00:00.0,2851,PENDING_PAYMENT
+1550,2013-08-02 00:00:00.0,3043,PENDING_PAYMENT
+2938,2013-08-10 00:00:00.0,116,COMPLETE
+21834,2013-12-06 00:00:00.0,12334,COMPLETE
+
+scala> //I took only orders which doesnt have order items
+
+scala> /Right outer join
+<console>:24: error: not found: value /
+       /Right outer join
+       ^
+<console>:24: error: not found: value outer
+       /Right outer join
+              ^
+
+scala> //Right outer join
+
+scala> val ordersRightOuterJoin = orderItemsMap.rightOuterJoin(ordersMap)
+ordersRightOuterJoin: org.apache.spark.rdd.RDD[(Int, (Option[String], String))] = MapPartitionsRDD[24] at rightOuterJoin at <console>:27
+
+scala> ordersRightOuterJoin.take(10).foreach(println)
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 404
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 413
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 401
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 417
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 421
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 414
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 406
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 415
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 420
+18/07/23 08:24:50 INFO BlockManagerInfo: Removed broadcast_20_piece0 on 192.168.1.105:41787 in memory (size: 2.1 KB, free: 366.2 MB)
+18/07/23 08:24:50 INFO BlockManagerInfo: Removed broadcast_20_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.1 KB, free: 93.2 MB)
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 424
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 408
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 416
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 409
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 412
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 423
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 419
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 418
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 422
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 403
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 407
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 402
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 411
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 400
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 410
+18/07/23 08:24:50 INFO ContextCleaner: Cleaned accumulator 405
+18/07/23 08:24:50 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 08:24:50 INFO DAGScheduler: Registering RDD 13 (map at <console>:25)
+18/07/23 08:24:50 INFO DAGScheduler: Registering RDD 15 (map at <console>:25)
+18/07/23 08:24:50 INFO DAGScheduler: Got job 13 (take at <console>:26) with 1 output partitions
+18/07/23 08:24:50 INFO DAGScheduler: Final stage: ResultStage 31 (take at <console>:26)
+18/07/23 08:24:50 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 30, ShuffleMapStage 29)
+18/07/23 08:24:50 INFO DAGScheduler: Missing parents: List(ShuffleMapStage 30, ShuffleMapStage 29)
+18/07/23 08:24:50 INFO DAGScheduler: Submitting ShuffleMapStage 29 (MapPartitionsRDD[13] at map at <console>:25), which has no missing parents
+18/07/23 08:24:50 INFO MemoryStore: Block broadcast_21 stored as values in memory (estimated size 4.0 KB, free 365.3 MB)
+18/07/23 08:24:50 INFO MemoryStore: Block broadcast_21_piece0 stored as bytes in memory (estimated size 2.4 KB, free 365.3 MB)
+18/07/23 08:24:50 INFO BlockManagerInfo: Added broadcast_21_piece0 in memory on 192.168.1.105:41787 (size: 2.4 KB, free: 366.2 MB)
+18/07/23 08:24:50 INFO SparkContext: Created broadcast 21 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:24:50 INFO DAGScheduler: Submitting 2 missing tasks from ShuffleMapStage 29 (MapPartitionsRDD[13] at map at <console>:25) (first 15 tasks are for partitions Vector(0, 1))
+18/07/23 08:24:50 INFO YarnScheduler: Adding task set 29.0 with 2 tasks
+18/07/23 08:24:50 INFO DAGScheduler: Submitting ShuffleMapStage 30 (MapPartitionsRDD[15] at map at <console>:25), which has no missing parents
+18/07/23 08:24:50 INFO TaskSetManager: Starting task 0.0 in stage 29.0 (TID 22, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7904 bytes)
+18/07/23 08:24:50 INFO MemoryStore: Block broadcast_22 stored as values in memory (estimated size 4.0 KB, free 365.3 MB)
+18/07/23 08:24:50 INFO BlockManagerInfo: Added broadcast_21_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.4 KB, free: 93.2 MB)
+18/07/23 08:24:50 INFO MemoryStore: Block broadcast_22_piece0 stored as bytes in memory (estimated size 2.4 KB, free 365.3 MB)
+18/07/23 08:24:50 INFO BlockManagerInfo: Added broadcast_22_piece0 in memory on 192.168.1.105:41787 (size: 2.4 KB, free: 366.2 MB)
+18/07/23 08:24:50 INFO SparkContext: Created broadcast 22 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:24:50 INFO DAGScheduler: Submitting 2 missing tasks from ShuffleMapStage 30 (MapPartitionsRDD[15] at map at <console>:25) (first 15 tasks are for partitions Vector(0, 1))
+18/07/23 08:24:50 INFO YarnScheduler: Adding task set 30.0 with 2 tasks
+18/07/23 08:24:50 INFO TaskSetManager: Starting task 1.0 in stage 29.0 (TID 23, raj-Lenovo-Y50-70, executor 1, partition 1, NODE_LOCAL, 7904 bytes)
+18/07/23 08:24:50 INFO TaskSetManager: Finished task 0.0 in stage 29.0 (TID 22) in 83 ms on raj-Lenovo-Y50-70 (executor 1) (1/2)
+18/07/23 08:24:50 INFO TaskSetManager: Starting task 0.0 in stage 30.0 (TID 24, raj-Lenovo-Y50-70, executor 1, partition 0, NODE_LOCAL, 7909 bytes)
+18/07/23 08:24:50 INFO TaskSetManager: Finished task 1.0 in stage 29.0 (TID 23) in 63 ms on raj-Lenovo-Y50-70 (executor 1) (2/2)
+18/07/23 08:24:50 INFO YarnScheduler: Removed TaskSet 29.0, whose tasks have all completed, from pool 
+18/07/23 08:24:50 INFO DAGScheduler: ShuffleMapStage 29 (map at <console>:25) finished in 0.150 s
+18/07/23 08:24:50 INFO DAGScheduler: looking for newly runnable stages
+18/07/23 08:24:50 INFO DAGScheduler: running: Set(ShuffleMapStage 30)
+18/07/23 08:24:50 INFO DAGScheduler: waiting: Set(ResultStage 31)
+18/07/23 08:24:50 INFO DAGScheduler: failed: Set()
+18/07/23 08:24:50 INFO BlockManagerInfo: Added broadcast_22_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.4 KB, free: 93.2 MB)
+18/07/23 08:24:51 INFO TaskSetManager: Starting task 1.0 in stage 30.0 (TID 25, raj-Lenovo-Y50-70, executor 1, partition 1, NODE_LOCAL, 7909 bytes)
+18/07/23 08:24:51 INFO TaskSetManager: Finished task 0.0 in stage 30.0 (TID 24) in 126 ms on raj-Lenovo-Y50-70 (executor 1) (1/2)
+18/07/23 08:24:51 INFO TaskSetManager: Finished task 1.0 in stage 30.0 (TID 25) in 116 ms on raj-Lenovo-Y50-70 (executor 1) (2/2)
+18/07/23 08:24:51 INFO YarnScheduler: Removed TaskSet 30.0, whose tasks have all completed, from pool 
+18/07/23 08:24:51 INFO DAGScheduler: ShuffleMapStage 30 (map at <console>:25) finished in 0.388 s
+18/07/23 08:24:51 INFO DAGScheduler: looking for newly runnable stages
+18/07/23 08:24:51 INFO DAGScheduler: running: Set()
+18/07/23 08:24:51 INFO DAGScheduler: waiting: Set(ResultStage 31)
+18/07/23 08:24:51 INFO DAGScheduler: failed: Set()
+18/07/23 08:24:51 INFO DAGScheduler: Submitting ResultStage 31 (MapPartitionsRDD[24] at rightOuterJoin at <console>:27), which has no missing parents
+18/07/23 08:24:51 INFO MemoryStore: Block broadcast_23 stored as values in memory (estimated size 3.3 KB, free 365.3 MB)
+18/07/23 08:24:51 INFO MemoryStore: Block broadcast_23_piece0 stored as bytes in memory (estimated size 1964.0 B, free 365.3 MB)
+18/07/23 08:24:51 INFO BlockManagerInfo: Added broadcast_23_piece0 in memory on 192.168.1.105:41787 (size: 1964.0 B, free: 366.2 MB)
+18/07/23 08:24:51 INFO SparkContext: Created broadcast 23 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:24:51 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 31 (MapPartitionsRDD[24] at rightOuterJoin at <console>:27) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:24:51 INFO YarnScheduler: Adding task set 31.0 with 1 tasks
+18/07/23 08:24:51 INFO TaskSetManager: Starting task 0.0 in stage 31.0 (TID 26, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:24:51 INFO BlockManagerInfo: Added broadcast_23_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 1964.0 B, free: 93.2 MB)
+18/07/23 08:24:51 INFO MapOutputTrackerMasterEndpoint: Asked to send map output locations for shuffle 4 to 192.168.1.105:60700
+18/07/23 08:24:51 INFO MapOutputTrackerMasterEndpoint: Asked to send map output locations for shuffle 5 to 192.168.1.105:60700
+18/07/23 08:24:51 INFO TaskSetManager: Finished task 0.0 in stage 31.0 (TID 26) in 212 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:24:51 INFO YarnScheduler: Removed TaskSet 31.0, whose tasks have all completed, from pool 
+18/07/23 08:24:51 INFO DAGScheduler: ResultStage 31 (take at <console>:26) finished in 0.218 s
+18/07/23 08:24:51 INFO DAGScheduler: Job 13 finished: take at <console>:26, took 0.612194 s
+(41234,(Some(102921,41234,249,2,109.94,54.97),41234,2014-04-04 00:00:00.0,3182,PENDING_PAYMENT))
+(65722,(Some(164249,65722,365,2,119.98,59.99),65722,2014-05-23 00:00:00.0,4077,COMPLETE))
+(65722,(Some(164250,65722,730,5,400.0,80.0),65722,2014-05-23 00:00:00.0,4077,COMPLETE))
+(65722,(Some(164251,65722,1004,1,399.98,399.98),65722,2014-05-23 00:00:00.0,4077,COMPLETE))
+(65722,(Some(164252,65722,627,5,199.95,39.99),65722,2014-05-23 00:00:00.0,4077,COMPLETE))
+(65722,(Some(164253,65722,191,2,199.98,99.99),65722,2014-05-23 00:00:00.0,4077,COMPLETE))
+(28730,(Some(71921,28730,365,5,299.95,59.99),28730,2014-01-18 00:00:00.0,6069,PENDING_PAYMENT))
+(28730,(Some(71922,28730,502,1,50.0,50.0),28730,2014-01-18 00:00:00.0,6069,PENDING_PAYMENT))
+(68522,(Some(171323,68522,127,1,329.99,329.99),68522,2014-06-05 00:00:00.0,880,SUSPECTED_FRAUD))
+(23776,(Some(59498,23776,1073,1,199.99,199.99),23776,2013-12-20 00:00:00.0,4041,COMPLETE))
+
+scala> 18/07/23 08:25:08 INFO BlockManagerInfo: Removed broadcast_22_piece0 on 192.168.1.105:41787 in memory (size: 2.4 KB, free: 366.2 MB)
+18/07/23 08:25:08 INFO BlockManagerInfo: Removed broadcast_22_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.4 KB, free: 93.2 MB)
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 496
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 470
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 474
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 485
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 495
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 482
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 445
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 473
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 437
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 454
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 460
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 471
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 444
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 446
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 426
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 477
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 499
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 452
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 472
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 435
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 479
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 480
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 455
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 497
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 431
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 450
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 430
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 429
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 490
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 469
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 457
+18/07/23 08:25:08 INFO BlockManagerInfo: Removed broadcast_23_piece0 on 192.168.1.105:41787 in memory (size: 1964.0 B, free: 366.2 MB)
+18/07/23 08:25:08 INFO BlockManagerInfo: Removed broadcast_23_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 1964.0 B, free: 93.2 MB)
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 427
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 491
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 466
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 453
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 434
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 489
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 433
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 464
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 451
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 486
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 467
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 476
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 478
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 487
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 449
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 483
+18/07/23 08:25:08 INFO BlockManagerInfo: Removed broadcast_21_piece0 on 192.168.1.105:41787 in memory (size: 2.4 KB, free: 366.2 MB)
+18/07/23 08:25:08 INFO BlockManagerInfo: Removed broadcast_21_piece0 on raj-Lenovo-Y50-70:44345 in memory (size: 2.4 KB, free: 93.2 MB)
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 436
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 438
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 440
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 428
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 439
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 498
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 425
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 484
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 459
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 443
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 494
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 441
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 493
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 432
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 465
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 463
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 492
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 447
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 448
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 488
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 456
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 468
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 461
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 462
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 481
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 442
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 458
+18/07/23 08:25:08 INFO ContextCleaner: Cleaned accumulator 475
+
+
+scala> 
+
+scala> val ordersWithNoOrderItem = ordersRightOuterJoin.
+     | filter(order => order._2._1 == None).
+     |   map(order => order._2._2)
+ordersWithNoOrderItem: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[26] at map at <console>:27
+
+scala> ordersWithNoOrderItem.take(10).foreach(println)
+18/07/23 08:25:48 INFO SparkContext: Starting job: take at <console>:26
+18/07/23 08:25:48 INFO DAGScheduler: Got job 14 (take at <console>:26) with 1 output partitions
+18/07/23 08:25:48 INFO DAGScheduler: Final stage: ResultStage 34 (take at <console>:26)
+18/07/23 08:25:48 INFO DAGScheduler: Parents of final stage: List(ShuffleMapStage 33, ShuffleMapStage 32)
+18/07/23 08:25:48 INFO DAGScheduler: Missing parents: List()
+18/07/23 08:25:48 INFO DAGScheduler: Submitting ResultStage 34 (MapPartitionsRDD[26] at map at <console>:27), which has no missing parents
+18/07/23 08:25:48 INFO MemoryStore: Block broadcast_24 stored as values in memory (estimated size 3.8 KB, free 365.3 MB)
+18/07/23 08:25:48 INFO MemoryStore: Block broadcast_24_piece0 stored as bytes in memory (estimated size 2.1 KB, free 365.3 MB)
+18/07/23 08:25:48 INFO BlockManagerInfo: Added broadcast_24_piece0 in memory on 192.168.1.105:41787 (size: 2.1 KB, free: 366.2 MB)
+18/07/23 08:25:48 INFO SparkContext: Created broadcast 24 from broadcast at DAGScheduler.scala:1039
+18/07/23 08:25:48 INFO DAGScheduler: Submitting 1 missing tasks from ResultStage 34 (MapPartitionsRDD[26] at map at <console>:27) (first 15 tasks are for partitions Vector(0))
+18/07/23 08:25:48 INFO YarnScheduler: Adding task set 34.0 with 1 tasks
+18/07/23 08:25:48 INFO TaskSetManager: Starting task 0.0 in stage 34.0 (TID 27, raj-Lenovo-Y50-70, executor 1, partition 0, PROCESS_LOCAL, 7723 bytes)
+18/07/23 08:25:48 INFO BlockManagerInfo: Added broadcast_24_piece0 in memory on raj-Lenovo-Y50-70:44345 (size: 2.1 KB, free: 93.2 MB)
+18/07/23 08:25:48 INFO TaskSetManager: Finished task 0.0 in stage 34.0 (TID 27) in 189 ms on raj-Lenovo-Y50-70 (executor 1) (1/1)
+18/07/23 08:25:48 INFO YarnScheduler: Removed TaskSet 34.0, whose tasks have all completed, from pool 
+18/07/23 08:25:48 INFO DAGScheduler: ResultStage 34 (take at <console>:26) finished in 0.279 s
+18/07/23 08:25:48 INFO DAGScheduler: Job 14 finished: take at <console>:26, took 0.280663 s
+5354,2013-08-26 00:00:00.0,7616,PENDING_PAYMENT
+40888,2014-04-02 00:00:00.0,4528,CLOSED
+62490,2014-01-22 00:00:00.0,8942,ON_HOLD
+63508,2014-02-28 00:00:00.0,1607,COMPLETE
+37370,2014-03-12 00:00:00.0,10541,COMPLETE
+12420,2013-10-09 00:00:00.0,449,PENDING
+1732,2013-08-03 00:00:00.0,2851,PENDING_PAYMENT
+1550,2013-08-02 00:00:00.0,3043,PENDING_PAYMENT
+21834,2013-12-06 00:00:00.0,12334,COMPLETE
+2938,2013-08-10 00:00:00.0,116,COMPLETE
+
+
+
+
+********* Full Outer join is nothing but Union of left outer and right outer join *********No data set ....
+
+
+
