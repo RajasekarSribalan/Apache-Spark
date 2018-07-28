@@ -1,0 +1,35 @@
+Let us get into set operations using Spark APIs. Spark support
+
+ union
+ intersection
+ distinct
+ minus – subtract
+ When union is performed, data will not be unique
+ Typically we have to use distinct after union to eliminate duplicates
+
+Set means elements which are similar and unique.No of fields ,columns and datatypes have to be same.
+
+
+// Set operations
+
+val orders = sc.textFile("/public/retail_db/orders")
+val customers_201308 = orders.
+  filter(order => order.split(",")(1).contains("2013-08")).
+  map(order => order.split(",")(2).toInt)
+
+val customers_201309 = orders.
+  filter(order => order.split(",")(1).contains("2013-09")).
+  map(order => order.split(",")(2).toInt)
+
+// Get all the customers who placed orders in 2013 August and 2013 September
+val customers_201308_and_201309 = customers_201308.intersection(customers_201309)
+
+// Get all unique customers who placed orders in 2013 August or 2013 September
+val customers_201308_union_201309 = customers_201308.union(customers_201309).distinct
+
+// Get all customers who placed orders in 2013 August but not in 2013 September
+val customer_201308_minus_201309 = customers_201308.map(c => (c, 1)).
+  leftOuterJoin(customers_201309.map(c => (c, 1))).
+  filter(rec => rec._2._2 == None).
+  map(rec => rec._1).
+  distinct
