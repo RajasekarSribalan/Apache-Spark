@@ -154,3 +154,206 @@ OK
 Time taken: 0.212 seconds, Fetched: 1 row(s)
 
 
+************* Manipulating Strings ****************
+
+hive> describe function substr
+    > ;
+OK
+substr(str, pos[, len]) - returns the substring of str that starts at pos and is of length len orsubstr(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len
+Time taken: 0.015 seconds, Fetched: 1 row(s)
+hive> describe function substring;
+OK
+substring(str, pos[, len]) - returns the substring of str that starts at pos and is of length len orsubstring(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len
+Time taken: 0.021 seconds, Fetched: 1 row(s)
+hive> describe function substr;
+OK
+substr(str, pos[, len]) - returns the substring of str that starts at pos and is of length len orsubstr(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len
+Time taken: 0.009 seconds, Fetched: 1 row(s)
+hive> select 'Hello world, how are you'
+    > ;
+OK
+Hello world, how are you
+Time taken: 0.206 seconds, Fetched: 1 row(s)
+hive> select 'Hello world, how are you';
+OK
+Hello world, how are you
+Time taken: 0.203 seconds, Fetched: 1 row(s)
+hive> select substr('Hello world, how are you',14);
+OK
+how are you
+Time taken: 0.208 seconds, Fetched: 1 row(s)
+hive> select substr('Hello world, how are you',7,5);
+OK
+world
+Time taken: 0.143 seconds, Fetched: 1 row(s)
+hive> select substr('Hello world, how are you',-3);
+OK
+you
+Time taken: 0.509 seconds, Fetched: 1 row(s)
+hive> select substr('Hello world, how are you',-7,3);
+OK
+are
+Time taken: 0.201 seconds, Fetched: 1 row(s)
+
+hive> select instr('Hello world, how are you',' ');
+OK
+6
+Time taken: 0.202 seconds, Fetched: 1 row(s)
+hive> select instr('Hello world, how are you','world');
+OK
+7
+Time taken: 0.085 seconds, Fetched: 1 row(s)
+hive> select instr('Hello world, how are you','h');
+OK
+14
+Time taken: 0.2 seconds, Fetched: 1 row(s)
+hive> select instr('Hello world, how are you','H');
+OK
+1
+Time taken: 0.206 seconds, Fetched: 1 row(s)
+hive> select like('Hello world, how are you','h');
+
+hive> select 'Hello world, how are you' like 'Hello%';
+OK
+true
+Time taken: 0.21 seconds, Fetched: 1 row(s)
+hive> select 'Hello world, how are you' like '%Hello%';
+OK
+true
+Time taken: 0.135 seconds, Fetched: 1 row(s)
+hive> select 'Hello world, how are you' like '%you%';
+OK
+true
+Time taken: 0.209 seconds, Fetched: 1 row(s)
+hive> select 'Hello world, how are you' like '%YOU%';
+OK
+false
+Time taken: 0.359 seconds, Fetched: 1 row(s)
+hive> select length('Hello world, how are you');
+OK
+24
+Time taken: 0.206 seconds, Fetched: 1 row(s)
+hive> select lower('Hello world, how are you');
+OK
+hello world, how are you
+Time taken: 0.208 seconds, Fetched: 1 row(s)
+hive> select lcase('Hello world, how are you');
+OK
+hello world, how are you
+Time taken: 0.201 seconds, Fetched: 1 row(s)
+hive> select ucase('Hello world, how are you');
+OK
+HELLO WORLD, HOW ARE YOU
+Time taken: 0.85 seconds, Fetched: 1 row(s)
+hive> select upper('Hello world, how are you');
+OK
+HELLO WORLD, HOW ARE YOU
+Time taken: 0.2 seconds, Fetched: 1 row(s)
+hive> select initcap('Hello world, how are you');
+OK
+Hello World, How Are You
+Time taken: 0.202 seconds, Fetched: 1 row(s)
+hive> select '12';
+OK
+12
+Time taken: 0.899 seconds, Fetched: 1 row(s)
+hive> select cast('12' as int);
+OK
+12
+Time taken: 0.224 seconds, Fetched: 1 row(s)
+hive> select order_date from orders limit 20;
+FAILED: SemanticException [Error 10001]: Line 1:23 Table not found 'orders'
+hive> show tables;
+OK
+customers
+Time taken: 0.129 seconds, Fetched: 1 row(s)
+hive> use retails_db_txt;
+FAILED: SemanticException [Error 10072]: Database does not exist: retails_db_txt
+hive> show databases;
+OK
+default
+dgadiraju_retail_db_orc
+retail_db_txt
+Time taken: 0.019 seconds, Fetched: 3 row(s)
+hive> use retails_db_txt;
+FAILED: SemanticException [Error 10072]: Database does not exist: retails_db_txt
+hive> use retail_db_txt;
+OK
+Time taken: 0.009 seconds
+hive> show tables;
+OK
+order_items
+orders
+Time taken: 0.017 seconds, Fetched: 2 row(s)
+hive> select  order_date from orders limit 10;
+OK
+2013-07-25 00:00:00.0
+2013-07-25 00:00:00.0
+2013-07-25 00:00:00.0
+2013-07-25 00:00:00.0
+2013-07-25 00:00:00.0
+2013-07-25 00:00:00.0
+2013-07-25 00:00:00.0
+2013-07-25 00:00:00.0
+2013-07-25 00:00:00.0
+2013-07-25 00:00:00.0
+Time taken: 0.211 seconds, Fetched: 10 row(s)
+hive> select  substr(order_date,6,2) from orders limit 10;
+OK
+07
+07
+07
+07
+07
+07
+07
+07
+07
+07
+Time taken: 0.699 seconds, Fetched: 10 row(s)
+hive> select  cast(substr(order_date,6,2) as int0 from orders limit 10;
+
+hive> select  cast(substr(order_date,6,2) as int) from orders limit 10;
+OK
+7
+7
+7
+7
+7
+7
+7
+7
+7
+7
+Time taken: 0.299 seconds, Fetched: 10 row(s)
+hive> select  substr(order_date,6,2) from orders limit 10;
+OK
+07
+07
+07
+07
+07
+07
+07
+07
+07
+07
+Time taken: 0.133 seconds, Fetched: 10 row(s)
+hive> select cast("hello" as int)
+    > ;
+OK
+NULL
+Time taken: 0.199 seconds, Fetched: 1 row(s)
+hive> select split("hello word hw are you",' ');
+OK
+["hello","word","hw","are","you"]
+Time taken: 0.235 seconds, Fetched: 1 row(s)
+hive> select index(split("hello word hw are you",' '),4);
+OK
+you
+Time taken: 0.208 seconds, Fetched: 1 row(s)
+hive> select index(split("hello word hw are you",' '),0);
+OK
+hello
+Time taken: 0.211 seconds, Fetched: 1 row(s)
+hive> 
