@@ -357,3 +357,53 @@ OK
 hello
 Time taken: 0.211 seconds, Fetched: 1 row(s)
 hive> 
+
+
+
+********************** Manipulating Dates  **************************
+
+hduser@raj-Lenovo-Y50-70:/usr/local/apache-hive-2.1.0-bin$ hive
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/usr/local/apache-hive-2.1.0-bin/lib/log4j-slf4j-impl-2.4.1.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/usr/local/hadoop/share/hadoop/common/lib/slf4j-log4j12-1.7.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.apache.logging.slf4j.Log4jLoggerFactory]
+
+Logging initialized using configuration in jar:file:/usr/local/apache-hive-2.1.0-bin/lib/hive-common-2.1.0.jar!/hive-log4j2.properties Async: true
+Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+hive> select current_date;
+OK
+2018-12-25
+Time taken: 1.821 seconds, Fetched: 1 row(s)
+hive> select current_timstamp;
+FAILED: SemanticException [Error 10004]: Line 1:7 Invalid table alias or column reference 'current_timstamp': (possible column names are: )
+hive> select current_timestamp;
+OK
+2018-12-25 12:46:18.401
+Time taken: 0.231 seconds, Fetched: 1 row(s)
+hive> select date_format(current_date,YYYY);
+FAILED: SemanticException [Error 10004]: Line 1:32 Invalid table alias or column reference 'YYYY': (possible column names are: )
+hive> select date_format(current_date,'y');
+OK
+2018
+Time taken: 0.21 seconds, Fetched: 1 row(s)
+hive> select date_format(current_date,'m');
+OK
+0
+Time taken: 0.093 seconds, Fetched: 1 row(s)
+hive> select date_format(current_date,'d');
+OK
+25
+Time taken: 0.14 seconds, Fetched: 1 row(s)
+hive> select date_format(current_date,'D');
+OK
+359
+Time taken: 0.204 seconds, Fetched: 1 row(s)
+hive> select day(current_date);
+OK
+25
+Time taken: 0.125 seconds, Fetched: 1 row(s)
+hive> select dayofmonth(current_date);
+OK
+25
+Time taken: 0.204 seconds, Fetched: 1 row(s)
