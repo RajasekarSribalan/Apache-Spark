@@ -407,3 +407,34 @@ hive> select dayofmonth(current_date);
 OK
 25
 Time taken: 0.204 seconds, Fetched: 1 row(s)
+
+
+
+**************** Aggregating Functions *****************
+
+select count(1) from orders;
+select sum(order_item_subtotal) from orders;
+
+
+******************** Case Statement ************
+
+
+case
+nvl
+
+kind of using IF condition like in programing
+
+
+describe function case;
+OK
+CASE a WHEN b THEN c [WHEN d THEN e]* [ELSE f] END - When a = b, returns c; when a = d, return e; else return f
+Time taken: 0.018 seconds, Fetched: 1 row(s)
+
+
+select order_status,
+       case  
+            when order_status IN ('CLOSED', 'COMPLETE') then 'No Action' 
+            when order_status IN ('ON_HOLD', 'PAYMENT_REVIEW', 'PENDING', 'PENDING_PAYMENT', 'PROCESSING') then 'Pending Action'
+            else 'Risky'
+end from orders limit 10;
+
