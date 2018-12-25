@@ -90,3 +90,67 @@ create table order_items (
 ) stored as orc;
 
 insert into table order_items select * from dgadiraju_retail_db_txt.order_items;
+
+
+******************** Spark SQL – Functions
+
+Spark SQL or Hive have bunch of functions to apply transformations on the data.
+
+    String manipulating functions
+    Data manipulating functions
+    Type cast functions
+    Functions to deal with nulls
+    Aggregating functions
+    Conditional expressions
+    and more
+
+
+to list functions suported by hive,
+
+hive> show functions
+    > ;
+OK
+!
+!=
+$sum0
+%
+&
+*
++
+-
+/
+<
+<=
+<=>
+<>
+=
+==
+>
+>=
+^
+abs
+acos
+add_months
+aes_decrypt
+
+
+
+hive> describe function avg;
+OK
+avg(x) - Returns the mean of a set of numbers
+Time taken: 0.019 seconds, Fetched: 1 row(s)
+hive> describe function sum;
+OK
+sum(x) - Returns the sum of a set of numbers
+Time taken: 0.009 seconds, Fetched: 1 row(s)
+hive> 
+
+
+To test a function,
+
+hive> select length('hello raj');
+OK
+9
+Time taken: 0.212 seconds, Fetched: 1 row(s)
+
+
