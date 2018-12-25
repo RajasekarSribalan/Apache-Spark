@@ -47,3 +47,46 @@ drwxr-xr-x   - hduser supergroup          0 2018-12-19 06:43 /data/retail_db/pro
 
 
 ****** hive landugae manual for all comamds during exam
+
+
+Creating tables and insert data
+
+    Hive supports other file formats
+        avro
+        orc
+        parquet
+        sequencefile
+        and more
+    When we use special file formats, most likely
+        Create staging table where structure matches data
+        Create table with the format you are interested in
+        Use insert command to get data from stage table into final table
+
+
+
+
+For other file formats,we need to use "insert" commands.
+When these formats are used,delimiter is not required to be given in the table creation command bcz it stores metadata.
+
+create database dgadiraju_retail_db_orc;
+use dgadiraju_retail_db_orc;
+
+create table orders (
+  order_id int,
+  order_date string,
+  order_customer_id int,
+  order_status string
+) stored as orc;
+
+insert into table orders select * from dgadiraju_retail_db_txt.orders;
+
+create table order_items (
+  order_item_id int,
+  order_item_order_id int,
+  order_item_product_id int,
+  order_item_quantity int,
+  order_item_subtotal float,
+  order_item_product_price float
+) stored as orc;
+
+insert into table order_items select * from dgadiraju_retail_db_txt.order_items;
