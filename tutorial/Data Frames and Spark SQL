@@ -387,6 +387,22 @@ Time taken: 0.211 seconds, Fetched: 1 row(s)
 hive> 
 
 
+rlike
+
+select 'Hello workd,how r you' rlike '%you%';  -> this will not work.This will work only for regex
+
+lpad
+rpad
+
+hive (rajasekar_retail_db_txt)> select lpad(123,5,0);
+OK
+00123
+Time taken: 0.308 seconds, Fetched: 1 row(s)
+hive (rajasekar_retail_db_txt)> select rpad(123,5,0);
+OK
+12300
+
+
 
 ********************** Manipulating Dates  **************************
 
