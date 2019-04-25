@@ -68,6 +68,10 @@ Creating tables and insert data
 For other file formats,we need to use "insert" commands.
 When these formats are used,delimiter is not required to be given in the table creation command bcz it stores metadata.
 
+describe orders;
+describe extended orders;
+describe formatted orders;
+
 create database dgadiraju_retail_db_orc;
 use dgadiraju_retail_db_orc;
 
