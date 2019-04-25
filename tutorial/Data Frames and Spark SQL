@@ -72,6 +72,30 @@ describe orders;
 describe extended orders;
 describe formatted orders;
 
+
+*** Default file format of ORC
+
+SerDe Library:          org.apache.hadoop.hive.ql.io.orc.OrcSerde
+InputFormat:            org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+OutputFormat:           org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+
+
+To use custom file format, refer to Hive language manual 
+
+We can use INPUTFORMAT
+
+
+file_format:
+  : SEQUENCEFILE
+  | TEXTFILE    -- (Default, depending on hive.default.fileformat configuration)
+  | RCFILE      -- (Note: Available in Hive 0.6.0 and later)
+  | ORC         -- (Note: Available in Hive 0.11.0 and later)
+  | PARQUET     -- (Note: Available in Hive 0.13.0 and later)
+  | AVRO        -- (Note: Available in Hive 0.14.0 and later)
+  | JSONFILE    -- (Note: Available in Hive 4.0.0 and later)
+  | INPUTFORMAT input_format_classname OUTPUTFORMAT output_format_classname
+  
+  
 create database dgadiraju_retail_db_orc;
 use dgadiraju_retail_db_orc;
 
