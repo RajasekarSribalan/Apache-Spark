@@ -406,6 +406,9 @@ OK
 
 ********************** Manipulating Dates  **************************
 
+https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF#LanguageManualUDF-DateFunctions
+
+
 hduser@raj-Lenovo-Y50-70:/usr/local/apache-hive-2.1.0-bin$ hive
 SLF4J: Class path contains multiple SLF4J bindings.
 SLF4J: Found binding in [jar:file:/usr/local/apache-hive-2.1.0-bin/lib/log4j-slf4j-impl-2.4.1.jar!/org/slf4j/impl/StaticLoggerBinder.class]
@@ -458,6 +461,23 @@ Time taken: 0.204 seconds, Fetched: 1 row(s)
 
 select count(1) from orders;
 select sum(order_item_subtotal) from orders;
+
+ select to_unix_timestamp(current_date);
+OK
+1556164800
+Time taken: 0.378 seconds, Fetched: 1 row(s)
+hive (rajasekar_retail_db_txt)> select to_unix_timestamp(current_date);
+OK
+1556164800
+Time taken: 0.283 seconds, Fetched: 1 row(s)
+hive (rajasekar_retail_db_txt)> select from_unix_timestamp(1556164800)
+                              > ;
+FAILED: SemanticException [Error 10011]: Line 1:7 Invalid function 'from_unix_timestamp'
+hive (rajasekar_retail_db_txt)> select from_unixtime(1556164800);
+OK
+2019-04-25 00:00:00
+Time taken: 0.45 seconds, Fetched: 1 row(s)
+
 
 
 ******************** Case Statement ************
