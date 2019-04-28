@@ -588,3 +588,10 @@ where o.order_status in ('COMPLETE', 'CLOSED')
 group by o.order_id, o.order_date, o.order_status
 having sum(oi.order_item_subtotal) >= 1000
 distribute b o.oder_date sort by o.order_date,order_revenue desc;
+
+
+
+******** SET operations ******
+
+union
+union all
