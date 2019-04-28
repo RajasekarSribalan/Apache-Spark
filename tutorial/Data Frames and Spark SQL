@@ -502,3 +502,34 @@ select order_status,
             else 'Risky'
 end from orders limit 10;
 
+
+
+***************** Spark SQL – Standard Transformations *********************
+
+Row level transformation
+
+To take year and month, and concat both to form a string
+
+e.g., date - 2017-05-31 00.00.00.0
+
+substr(1,4) gives 2017
+substr(6,2) gives 05
+concat() gives 201705
+
+select concat(substr(order_date,1,4),substr(order_date,6,2)) from orders limit 10;
+
+hive (rajasekar_retail_db_txt)> select concat(substr(order_date,1,4),substr(order_date,6,2)) from orders limit 10;
+OK
+201307
+201307
+201307
+201307
+201307
+201307
+201307
+201307
+201307
+201307
+
+select cast(concat(substr(order_date,1,4),substr(order_date,6,2))  as int )from orders limit 10;
+
