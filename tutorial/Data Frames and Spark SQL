@@ -595,3 +595,43 @@ distribute b o.oder_date sort by o.order_date,order_revenue desc;
 
 union
 union all
+
+
+Spark SQL – Processing data using Data Frames
+
+Let us get into details related to Data Frames. Data Frames can be created from
+
+    RDD, by using toDF function
+    We can register Data Frame as temp table and start running queries against it
+    Querying hive tables (which is already explored)
+    Querying tables from remote databases using JDBC
+
+Create Data Frame and Register as temp table
+
+Here are the steps to create data frame and run queries against it
+
+    Read data from HDFS
+    Apply map transformation to convert each record into tuple
+    Use toDF function to convert RDD into Data Frame
+    Register Data Frame as temp table
+    Run queries against temp table using sqlContext.sql
+
+val ordersRDD = sc.textFile("/public/retail_db/orders")
+val ordersDF = ordersRDD.map(order => {
+  (order.split(",")(0).toInt, order.split(",")(1), order.split(",")(2).toInt, order.split(",")(3))
+}).toDF("order_id", "order_date", "order_customer_id", "order_status")
+
+ordersDF.registerTempTable("orders")
+sqlContext.sql("select order_status, count(1) count_by_status from orders group by order_status").show()
+
+sqlContext.sql("use dgadiraju_retail_db_orc")
+val productsRaw = scala.io.Source.fromFile("/data/retail_db/products/part-00000").getLines.toList
+val productsRDD = sc.parallelize(productsRaw)
+val productsDF = productsRDD.map(product => {
+  (product.split(",")(0).toInt, product.split(",")(2))
+}).
+toDF("product_id", "product_name")
+
+productsDF.registerTempTable("products")
+
+sqlContext.sql("select * from products").show
