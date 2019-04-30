@@ -635,3 +635,72 @@ toDF("product_id", "product_name")
 productsDF.registerTempTable("products")
 
 sqlContext.sql("select * from products").show
+
+
+Process data
+
+Once tables are registered, we can
+
+    Run all standard queries
+    Join temp tables with other hive tables
+
+sqlContext.sql("use dgadiraju_retail_db_orc")
+sqlContext.setConf("spark.sql.shuffle.partitions", "2")
+sqlContext.sql("SELECT o.order_date, p.product_name, sum(oi.order_item_subtotal) daily_revenue_per_product " +
+"FROM orders o JOIN order_items oi " +
+"ON o.order_id = oi.order_item_order_id " +
+"JOIN products p ON p.product_id = oi.order_item_product_id " +
+"WHERE o.order_status IN ('COMPLETE', 'CLOSED') " +
+"GROUP BY o.order_date, p.product_name " +
+"ORDER BY o.order_date, daily_revenue_per_product desc").
+show
+
+Saving Data Frame
+
+Spark provide several APIs and file formats to save data back to HDFS or Hive table
+
+    We can use APIs such as write or save to save the data frame
+    Data can be saved into Hive tables
+    Following file formats are supported
+        json
+        parquet
+        orc
+        csv (3rd party plugin)
+        avro (3rd party plugin, but comes with Cloudera out of the box)
+
+
+sqlContext.sql("CREATE DATABASE rajasekar_daily_revenue")
+sqlContext.sql("CREATE TABLE rajasekar_daily_revenue.daily_revenue " +
+"(order_date string, product_name string, daily_revenue_per_product float) " +
+"STORED AS orc")
+
+val daily_revenue_per_product = sqlContext.sql("SELECT o.order_date, p.product_name, sum(oi.order_item_subtotal) daily_revenue_per_product " +
+"FROM orders o JOIN order_items oi " +
+"ON o.order_id = oi.order_item_order_id " +
+"JOIN products p ON p.product_id = oi.order_item_product_id " +
+"WHERE o.order_status IN ('COMPLETE', 'CLOSED') " +
+"GROUP BY o.order_date, p.product_name " +
+"ORDER BY o.order_date, daily_revenue_per_product desc")
+
+daily_revenue_per_product.insertInto("dgadiraju_daily_revenue.daily_revenue")
+
+
+
+Data Frame Operations
+
+Spark provides APIs categorized under Data Frame Operations. They are alternative to SQL.
+
+    We can perform all standard functionality provided by SQL using Data Frame Operations
+    Data Frame Operations provide more control while writing the logic over SQL
+    For certification perspective, you can ignore Data Frame operations and focus on SQL
+
+insertinto -> to save df into hive table
+insertintojdbc -> for saving df into jdbc
+daily_revenue_per_product.save("/user/dgadiraju/daily_revenue_save", "json")
+daily_revenue_per_product.write.json("/user/dgadiraju/daily_revenue_write")
+daily_revenue_per_product.select("order_date", "daily_revenue_per_product")
+daily_revenue_per_product.filter(daily_revenue_per_product("order_date") === "2013-07-25 00:00:00.0").count
+
+df.rdd -> give the rdd
+
+
