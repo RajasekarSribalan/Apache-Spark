@@ -56,3 +56,86 @@ Go to /opt/gen_logs/ for generating web server logs
 
 
 
+******  Flume – Web Server logs to HDFS
+
+
+Let us see how we can set up Flume agent to get data from web server logs into HDFS
+
+*--Define Source – exec type
+
+Let us read data from web server logs.
+
+    Use exec type as source
+    Issue tail -F command to continuously read messages from the simulated logs
+
+
+
+wh.sources = ws
+wh.sinks = k1
+wh.channels = mem
+
+# Describe/configure the source
+wh.sources.ws.type = exec
+wh.sources.ws.comman = tail -f /op/gen_logs/logs/access.log
+
+
+*---Define Sink – HDFS type
+
+Let us get started with HDFS sink, by defining
+
+    Path
+    Rest of the properties are defaults
+
+# Describe the sink
+wh.sinks.hd.type = hdfs
+wh.sinks.hd.hdfs.path=hdfs://nn01.itversity.com:8020/user/rajasekar/flume_demo
+
+
+
+
+===================================
+
+# wshdfs.conf
+# To get the data from web server logs to HDFS
+wh.sources = ws
+wh.sinks = hd
+wh.channels = mem
+
+# Describe/configure the source
+wh.sources.ws.type = exec
+wh.sources.ws.command = tail -F /opt/gen_logs/logs/access.log
+
+# Describe the sink
+wh.sinks.hd.type = hdfs
+wh.sinks.hd.hdfs.path = hdfs://nn01.itversity.com:8020/user/dgadiraju/flume_demo
+
+wh.sinks.hd.hdfs.filePrefix = FlumeDemo
+wh.sinks.hd.hdfs.fileSuffix = .txt
+wh.sinks.hd.hdfs.rollInterval = 120
+wh.sinks.hd.hdfs.rollSize = 1048576
+wh.sinks.hd.hdfs.rollCount = 100
+wh.sinks.hd.hdfs.fileType = DataStream
+
+# Use a channel which buffers events in memory
+wh.channels.mem.type = memory
+wh.channels.mem.capacity = 1000
+wh.channels.mem.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+wh.sources.ws.channels = mem
+wh.sinks.hd.channel = mem
+
+
+==================================================
+
+
+Different Flume implementations
+
+Flume agents can be configured using different flows
+
+    Linear – Multiple flume agents integrated by avro sink of prior agent and avro source of later agent
+    Consolidation – Multiple flume agents pointing to different web server log sources will be consumed by one agent (again integrated by avro)
+    Multiplex – Data from one source can be pushed to multiple sinks. There will be one channel for each of the sink.
+
+
+
