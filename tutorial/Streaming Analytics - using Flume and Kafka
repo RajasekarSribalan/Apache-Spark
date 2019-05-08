@@ -1,0 +1,58 @@
+
+Flume – Getting Started
+
+Let us understand briefly about Flume.
+
+    It is a data ingestion tool
+    It can get log messages from log files, syslog and many other sources
+    No design changes are required
+
+Documentation and Simple Example
+
+Flume require
+
+    One or more sources
+    One or more sinks
+    One channel for each sink
+
+In the simple example we will see flume agent configuration with
+
+    One source – netcat web service
+    One sink – logger
+    One channel – memory
+
+
+Go Flume user guide 1.6 and chekc the example.conf.
+
+Create a directory and create file and copy the content of example.conf to it.
+
+and run flume using below command
+
+flume-ng agent --conf conf --conf-file example.conf --name a1 -Dflume.root.logger=INFO,console
+
+Integration to HDFS – Introduction
+
+HDFS is one of the most common sinks to which data is pushed to by Flume agents. There are several properties that can be override while pushing data to HDFS.
+
+    Path
+    File Suffix
+    File Prefix
+    Roll Properties
+    Timestamp
+    and many more
+
+Get web server logs from to HDFS using flume
+
+source - exec (tail -f )
+sink - hdfs sink
+channel - memory or file
+
+
+Setting up data
+
+Let us see how we can set up data to get simulated log messages pushed to HDFS. We use gen_logs application to continuously generate log messages in /opt/gen_logs/logs/alert.log file.
+
+Go to /opt/gen_logs/ for generating web server logs
+
+
+
