@@ -139,3 +139,102 @@ Flume agents can be configured using different flows
 
 
 
+
+
+
+****************** KAFKA *************************
+
+Kafka is getting popular in ingesting data in streaming fashion from different sources to different targets due to several reasons.
+
+    Highly reliable
+    Highly scalable
+    Robust APIs
+    Easy to integrate
+
+High level architecture
+
+Kafka contains several components
+
+    Zoo Keeper – to keep Kafka brokers up and running
+    Kafka Broker – who manages topics
+    Kafka Cluster contains multiple brokers
+
+Kafka provide APIs for
+
+    Producers – to publish messages into Kafka topic
+    Consumers – to consume messages from Kafka topic
+    Stream processors
+    Connectors (such as Database)
+
+Sample Commands – to validate
+
+Kafka provides command line utilities to
+
+    manage topics – create, list and delete
+    publish messages to topic
+    consume messages from topic
+
+Make sure environment variables are set to use the commands.
+
+
+kafka-topics.sh --create \
+   --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+   --replication-factor 1 \
+   --partitions 1 \
+   --topic kafkademodg
+
+kafka-topics.sh --list \
+   --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+   --topic kafkademodg
+
+kafka-console-producer.sh \
+  --broker-list nn01.itversity.com:6667,nn02.itversity.com:6667,rm01.itversity.com:6667 \
+  --topic kafkademodg
+
+kafka-console-consumer.sh \
+  --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+  --topic kafkademodg \
+--from-beginning
+
+Anatomy of a topic
+
+Kafka topic have important properties like
+
+    partition – for scalability
+    replication – for reliability
+
+We can define number of partitions and replication factor while creating the topics. Consumers maintain offsets to understand till the position of messages that are read in each of the partition.
+
+Anatomy of a topic
+
+Kafka topic have important properties like
+
+    partition – for scalability
+    replication – for reliability
+
+We can define number of partitions and replication factor while creating the topics. Consumers maintain offsets to understand till the position of messages that are read in each of the partition.
+
+
+1.Topic is nothing but a file which captures stream of messages.
+2.Publishers publish message to topic.
+3.Consumers subscribe to the topic.
+4.Topics can be partitioned for scalability.
+5.Each topic partition can be cloned for reliabillity.
+5.Offset - posotion of the last message consumers have read from each partition of the topic.
+6.Consumer group can be created to facilitate multiple consumers read from same topic in co-ordinated fashion (offset is tracked at group-level).
+
+
+
+Role of Kafka and Flume
+
+Even though Kafka is increasingly used as part of the new applications, there is resistance for legacy applications. Hence in case of legacy applications, Flume and Kafka complement well.
+
+    Read data from legacy applications using Flume
+    Use Kafka sink to push messages to Kafka topic
+    Consume messages from Kafka and process using technologies like Spark Streaming
+
+
+Flume advantages - if exisitng code is up and running and logs are being logged which then needs to be analyzed ,then flume can be installed and flume gaent can be used to read 
+the logs.So, there is no changes to application.
+
+disadvantages -not reliable and not scalable
