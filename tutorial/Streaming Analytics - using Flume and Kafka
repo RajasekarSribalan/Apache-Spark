@@ -238,3 +238,34 @@ Flume advantages - if exisitng code is up and running and logs are being logged 
 the logs.So, there is no changes to application.
 
 disadvantages -not reliable and not scalable
+
+
+
+***************** 
+
+Spark Streaming – Getting Started
+
+
+Let us get started with Spark Streaming.
+
+    Spark Streaming is a module which provide APIs to process streaming data
+    It can be integrated with any streaming ingestion technology such as Flume, Kafka etc
+
+Getting Started
+
+Spark Streaming is used to process data in streaming fashion.
+
+    It requires web service called StreamingContext
+    Unlike SparkContext, StreamingContext runs perpetually processing data at regular intervals
+    We cannot have multiple contexts running at same time, hence if there is running SparkContext we need to stop it before we launch StreamingContext
+
+
+
+=============
+
+import org.apache.spark.streaming._
+import org.apache.spark.SparkConf
+val conf = new SparkConf().setAppName("Spark").setMaster("yarn-client");
+val ssc = new StreamingContext(conf,Seconds(10))
+
+=============
